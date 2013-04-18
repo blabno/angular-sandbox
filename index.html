@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Angular.js sandbox</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.6/angular.min.js"></script>
+    <script src="blog.js"></script>
+</head>
+<body>
+<div ng-app>
+    <div id="blog" ng-controller="Blog">
+        <ul>
+            <li ng-repeat="post in posts">
+                <a href="{{post.link}}">{{post.title}}</a> by {{post.author}}
+            </li>
+        </ul>
+    </div>
+</div>
+</body>
+</html>
