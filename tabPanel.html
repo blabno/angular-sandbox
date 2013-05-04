@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Angular.js sandbox</title>
+    <script src="jquery.js"></script>
+    <script src="angular.js"></script>
+    <script src="TabPanel.js"></script>
+    <script src="angular-ui-bootstrap.js"></script>
+    <link href="bootstrap-combined.min.css" rel="stylesheet"/>
+</head>
+<body>
+
+<div ng-app="ITC">
+    <div id="tabPanel" ng-controller="TabPanel">
+        <tabs>
+            <pane heading="{{tab.heading}}" ng-repeat="tab in tabs">
+                <eval expr="tab.content"></eval>
+                <button ng-click="removeTab(tab)">Close</button>
+            </pane>
+        </tabs>
+        <button ng-click="addTab()">Add tab</button>
+    </div>
+</div>
+</body>
+</html>
