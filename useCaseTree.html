@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script src="libs/angular.js"></script>
+    <script src="libs/angular-ui-bootstrap.js"></script>
+    <script src="js/tree.js"></script>
+    <link href="css/bootstrap-combined.min.css" rel="stylesheet"/>
+    <style type="text/css">
+        .treenode {
+            list-style-type: none;
+        }
+
+        [class^='icon-'].disabled {
+            opacity: .3;
+        }
+    </style>
+</head>
+<body ng-app="ITC">
+<script type="text/ng-template" id="treeNode.html">
+    <span ng-click="toggle(node)">
+        <i ng-class="{'icon-plus':!open,'icon-minus':open,'disabled':node.children.length==0}"></i>
+        {{node.name}}
+    </span>
+    <button class="btn btn-primary" ng-click="add(node)">Add</button>
+    <ul ng-show="open">
+        <li ng-repeat="node in node.children" ng-include="'treeNode.html'" class="treenode"
+            ng-controller="NodeCtrl"></li>
+    </ul>
+</script>
+<ul ng-controller="TreeCtrl">
+    <li ng-repeat="node in children" ng-include="'treeNode.html'" class="treenode" ng-controller="NodeCtrl"></li>
+</ul>
+</body>
+</html>
