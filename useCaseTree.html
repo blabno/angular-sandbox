@@ -20,10 +20,7 @@
 <ul ng-controller="TreeCtrl">
     selectedNode:{{selectedNode}}
 
-    <treenode ng-repeat="child in children" value="child" select="select(childa)"></treenode>
-    <div ng-controller="NodeCtrl">
-        <button ng-click="select()">Click</button>
-    </div>
+    <treenode ng-repeat="child in children"></treenode>
 </ul>
 </body>
 </html>

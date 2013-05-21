@@ -1,9 +1,9 @@
 <li ng-controller="NodeCtrl" class="treenode">
-    <span ng-click="toggle(value())">
+    <span ng-click="toggle(child)">
         <i ng-class="{'icon-plus':!open,'icon-minus':open,'disabled':node.children.length==0}"></i>
-        {{value().name}}
+        {{child.name}}
     </span>
-    <button class="btn btn-primary" ng-click="add(value())">Add</button>
-    <button class="btn" ng-click="alert(value())">Select</button>
-    <ul ng-show="open && value().children.length>0"></ul>
+    <button class="btn btn-primary" ng-click="add(child)">Add</button>
+    <button class="btn" ng-click="select(child)">Select</button>
+    <ul ng-show="open && child.children.length>0"></ul>
 </li>
