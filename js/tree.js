@@ -14,9 +14,9 @@ itc.factory("packageDAO", function ()
         rootNodes[0], rootNodes[1], rootNodes[2]
     ];
     var nodeChildMap = [];
-    for (var i = 5; i < 100; i++) {
-        var node = {id: i, name: "Node " + i, hasChildren: false};
-        var parentIndex = Math.floor(Math.random() * (nodes.length - 1));
+
+    function addChild(parentIndex, node)
+    {
         var parentNode = nodes[parentIndex];
         var parentId = parentNode.id;
         nodes.push(node);
@@ -27,6 +27,16 @@ itc.factory("packageDAO", function ()
         children.push(node);
         parentNode.hasChildren = true;
     }
+
+    for (var i = 5; i < 100; i++) {
+        var node = {id: i, name: "Node " + i, hasChildren: false};
+        var parentIndex = Math.floor(Math.random() * (nodes.length - 1)) + 1;
+        /**We don't add children to Requester*/
+        addChild(parentIndex, node);
+    }
+    addChild(0, {id: i + 1, name: "Questionnaire"});
+    addChild(0, {id: i + 2, name: "Company"});
+    addChild(0, {id: i + 3, name: "Rating"});
     /**
      * End of mock data
      */

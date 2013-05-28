@@ -2,6 +2,7 @@
 <html>
 <head>
     <title></title>
+    <script src="libs/jquery.js"></script>
     <script src="libs/angular.js"></script>
     <script src="libs/angular-ui-bootstrap.js"></script>
     <script src="js/tree.js"></script>
@@ -18,8 +19,9 @@
 </head>
 <body ng-app="ITC">
 <div ng-controller="TreeCtrl">
-    selectedNode:{{selectedNode}}
-    <ul>
+    <div>selectedNode:<span id="selectedNode">{{selectedNode.name}}</span></div>
+    <div>selectedNode JSON:{{selectedNode}}</div>
+    <ul id="treeRoot">
         <li ng-repeat="child in child.getChildren()">
             <treenode></treenode>
         </li>
