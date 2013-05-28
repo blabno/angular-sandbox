@@ -19,8 +19,7 @@
 <body ng-app="ITC">
 <ul ng-controller="TreeCtrl">
     selectedNode:{{selectedNode}}
-
-    <treenode ng-repeat="child in children"></treenode>
+    <treenode ng-repeat="child in getChildren()"></treenode>
 </ul>
 </body>
 </html>
