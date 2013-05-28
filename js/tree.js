@@ -5,22 +5,21 @@ itc.factory("packageDAO", function ()
     /**
      * Mock data
      **/
-    var rootChildren = [
+    var rootNodes = [
         {id: 1, name: "Requester", hasChildren: true},
-        {id: 2, name: "Supplier", hasChildren: false}
+        {id: 2, name: "Supplier", hasChildren: false},
+        {id: 3, name: "Admin", hasChildren: false}
     ];
-    var requesterChildren = [
-        {id: 3, name: "Questionnaire", hasChildren: false}
+    var nodes = [
+        rootNodes[0], rootNodes[1], rootNodes[2]
     ];
-    var nodes = [requesterChildren[0]];
     var nodeChildMap = [];
-    for (var i = 4; i < 20; i++) {
+    for (var i = 5; i < 100; i++) {
         var node = {id: i, name: "Node " + i, hasChildren: false};
         var parentIndex = Math.floor(Math.random() * (nodes.length - 1));
         var parentNode = nodes[parentIndex];
         var parentId = parentNode.id;
         nodes.push(node);
-        requesterChildren.push();
         var children = nodeChildMap[parentId];
         if (undefined == children) {
             nodeChildMap[parentId] = children = [];
@@ -35,16 +34,12 @@ itc.factory("packageDAO", function ()
         list: function (parentId)
         {
             console.debug("Lazy loading children of " + parentId);
-            if (1 == parentId) {
-                return requesterChildren;
-            } else if (undefined == parentId) {
-                return  rootChildren;
+            if (undefined == parentId) {
+                return rootNodes;
+            } else if (undefined == nodeChildMap[parentId]) {
+                return [];
             } else {
-                if (undefined == nodeChildMap[parentId]) {
-                    return [];
-                } else {
-                    return nodeChildMap[parentId];
-                }
+                return nodeChildMap[parentId];
             }
         }
     }
@@ -78,8 +73,16 @@ itc.factory("nodeFactory", function (packageDAO)
             {
                 initChildren(this);
                 this.children.push(child);
-                this.open = true;
                 this.hasChildren = true;
+                this.open = true;
+            },
+            removeChild: function (child)
+            {
+                initChildren(this);
+                var index = this.children.indexOf(child);
+                this.children.splice(index, 1);
+                this.hasChildren = this.children.length > 0;
+                this.open = this.open && this.hasChildren;
             }
         };
     };
@@ -90,14 +93,10 @@ itc.factory("nodeFactory", function (packageDAO)
 
 itc.controller("TreeCtrl", function ($scope, packageDAO, nodeFactory)
 {
-    var rootNode = nodeFactory.create({id: null, name: "Root"});
-    rootNode.open = true;
-    $scope.getChildren = function ()
-    {
-        return rootNode.getChildren();
-    };
+    $scope.child = nodeFactory.create({id: null, name: "Root", hasChildren: true});
+    $scope.child.open = true;
 
-    $scope.selectedNode = rootNode.getChildren()[0];
+    $scope.selectedNode = null;
     $scope.select = function (node)
     {
         $scope.selectedNode = node;
@@ -106,18 +105,39 @@ itc.controller("TreeCtrl", function ($scope, packageDAO, nodeFactory)
 });
 itc.controller("NodeCtrl", function ($scope, nodeFactory)
 {
-    $scope.isOpen = function (node)
+    function getNode()
     {
-        return node.open;
+        return $scope.child;
+    }
+
+    function getParentNode()
+    {
+        return $scope.$parent.child;
+    }
+
+    $scope.isOpen = function ()
+    {
+        return getNode().open;
     };
 
-    $scope.add = function (node)
+    $scope.add = function ()
     {
-        node.addChild(nodeFactory.create({id: new Date().getTime(), name: new Date(), hasChildren: false}));
+        getNode().addChild(nodeFactory.create({id: new Date().getTime(), name: new Date(), hasChildren: false}));
     };
 
-    $scope.toggle = function (node)
+    $scope.getChildren = function ()
     {
+        return getNode().getChildren();
+    };
+
+    $scope.removeMe = function ()
+    {
+        getParentNode().removeChild(getNode());
+    };
+
+    $scope.toggle = function ()
+    {
+        var node = getNode();
         if (!node.hasChildren) {
             return;
         }
@@ -131,11 +151,11 @@ itc.directive("treenode", function ($compile)
     return {
         restrict: 'E',
         transclude: false,
-        scope: true,
+        scope: false,
         templateUrl: 'template/treeNode.html',
         link: function (scope, elm)
         {
-            var childTemplate = '<treenode ng-repeat="child in child.getChildren()"/>';
+            var childTemplate = '<li ng-repeat="child in getChildren()"><treenode></treenode></li>';
             var children = $compile(childTemplate)(scope);
             elm.find("ul").append(children);
         },

@@ -1,9 +1,10 @@
-<li ng-controller="NodeCtrl" class="treenode">
-    <span ng-click="toggle(child)">
-        <i ng-class="{'icon-plus':!isOpen(child),'icon-minus':isOpen(child),'disabled':!child.hasChildren}"></i>
+<div ng-controller="NodeCtrl" class="treenode">
+    <span ng-click="toggle()">
+        <i ng-class="{'icon-plus':!isOpen(),'icon-minus':isOpen(),'disabled':!child.hasChildren}"></i>
         {{child.name}}
     </span>
-    <button class="btn btn-primary" ng-click="add(child)">Add</button>
+    <button class="btn btn-primary" ng-click="add()">Add</button>
     <button class="btn" ng-click="select(child)">Select</button>
-    <ul ng-show="isOpen(child)"></ul>
-</li>
+    <button class="btn btn-danger" ng-click="removeMe()">Remove</button>
+    <ul ng-show="isOpen()"></ul>
+</div>

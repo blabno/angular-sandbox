@@ -17,9 +17,14 @@
     </style>
 </head>
 <body ng-app="ITC">
-<ul ng-controller="TreeCtrl">
+<div ng-controller="TreeCtrl">
     selectedNode:{{selectedNode}}
-    <treenode ng-repeat="child in getChildren()"></treenode>
-</ul>
+    <ul>
+        <li ng-repeat="child in child.getChildren()">
+            <treenode></treenode>
+        </li>
+    </ul>
+
+</div>
 </body>
 </html>
