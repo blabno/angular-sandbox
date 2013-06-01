@@ -90,6 +90,10 @@ StaticServlet.prototype.handleRequest = function(req, res) {
     var path = ('./' + req.url.pathname).replace('//','/').replace(/%(..)/g, function(match, hex){
         return String.fromCharCode(parseInt(hex, 16));
     });
+    if(path.indexOf("./api/")==0) {
+        this.handleAPIRequest(req,res);
+        return;
+    }
     var parts = path.split('/');
     if (parts[parts.length-1].charAt(0) === '.')
         return self.sendForbidden_(req, res, path);
@@ -102,6 +106,13 @@ StaticServlet.prototype.handleRequest = function(req, res) {
     });
 }
 
+StaticServlet.prototype.handleAPIRequest = function(req, res) {
+    res.writeHead(200, {
+        'Content-Type': 'application/json'
+    });
+    res.write(JSON.stringify({"a":123}));
+    res.end();
+};
 StaticServlet.prototype.sendError_ = function(req, res, error) {
     res.writeHead(500, {
         'Content-Type': 'text/html'
