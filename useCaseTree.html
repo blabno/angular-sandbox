@@ -8,8 +8,25 @@
     <script src="js/tree.js"></script>
     <link href="css/bootstrap-combined.min.css" rel="stylesheet"/>
     <style type="text/css">
-        .treenode {
+        ul#treeRoot, .treenode > ul {
             list-style-type: none;
+        }
+
+        .treenode .toggle {
+            cursor: pointer;
+        }
+
+        .treenode > .head .btn-danger {
+            visibility: hidden;
+        }
+
+        .treenode > .head:hover .btn-danger {
+            visibility: visible;
+        }
+
+        .treenode.selected > .head .toggle  .name {
+            color: #fff;
+            background-color: #aaa;
         }
 
         [class^='icon-'].disabled {
@@ -21,12 +38,21 @@
 <div ng-controller="TreeCtrl">
     <div>selectedNode:<span id="selectedNode">{{selectedNode.name}}</span></div>
     <div>selectedNode JSON:{{selectedNode}}</div>
+    <div class="controls">
+        <button ng-click="newPackage()" ng-disabled="null!=selectedNode && !isPackage(selectedNode)" class="btn" title="New package">
+            <i class="icon-folder-close"></i>
+        </button>
+        <button ng-click="newUsecase()" ng-disabled="!isPackage(selectedNode)" class="btn" title="New usecase">
+            <i class="icon-eye-open"></i>
+        </button>
+    </div>
     <ul id="treeRoot">
         <li ng-repeat="child in child.getChildren()">
+            <!--suppress HtmlUnknownTag -->
             <treenode></treenode>
         </li>
     </ul>
 
 </div>
 </body>
-</html>
+</html>                                                                                                    `

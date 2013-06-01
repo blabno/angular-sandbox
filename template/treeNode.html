@@ -1,10 +1,11 @@
-<div ng-controller="NodeCtrl" class="treenode">
-    <span ng-click="toggle()" class="toggle">
-        <i ng-class="{'icon-plus':!isOpen(),'icon-minus':isOpen(),'disabled':!child.hasChildren}"></i>
-        {{child.name}}
-    </span>
-    <button class="btn btn-primary" ng-click="add()">Add</button>
-    <button class="btn select" ng-click="select(child)">Select</button>
-    <button class="btn btn-danger" ng-click="removeMe()">Remove</button>
+<div ng-controller="NodeCtrl" class="treenode" ng-class="{'selected':isSelected(child)}">
+    <div class="head">
+        <span ng-click="select(child)" ng-dblclick="toggle()" class="toggle">
+            <!--suppress HtmlPresentationalElement -->
+            <i ng-class="{'icon-folder-close':isPackage(child) && !isOpen(),'icon-folder-open':isPackage(child) && isOpen(),'disabled':isPackage(child) && !child.hasChildren, 'icon-eye-open':isUseCase(child)}"></i>
+            <span class="name">{{child.name}}</span>
+        </span>
+        <button class="btn btn-danger" ng-click="removeMe()">Remove</button>
+    </div>
     <ul ng-show="isOpen()"></ul>
 </div>
