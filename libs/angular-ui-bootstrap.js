@@ -3837,7 +3837,8 @@ angular.module('ui.bootstrap.tabs', [])
         restrict: 'EA',
         transclude: true,
         scope:{
-            heading:'@'
+            heading:'@',
+            icon:'@'
         },
         link: function(scope, element, attrs, tabsCtrl) {
             var getSelected, setSelected;
@@ -4238,7 +4239,7 @@ angular.module("template/tabs/tabs.html", []).run(["$templateCache", function($t
         "<div class=\"tabbable\">\n" +
             "  <ul class=\"nav nav-tabs\">\n" +
             "    <li ng-repeat=\"pane in panes\" ng-class=\"{active:pane.selected}\">\n" +
-            "      <a ng-click=\"select(pane)\">{{pane.heading}}</a>\n" +
+            "      <a ng-click=\"select(pane)\"><span class=\"{{pane.icon}}\" ng-hide=\"!pane.icon\"/>{{pane.heading}}</a>\n" +
             "    </li>\n" +
             "  </ul>\n" +
             "  <div class=\"tab-content\" ng-transclude></div>\n" +

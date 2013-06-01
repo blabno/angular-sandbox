@@ -225,3 +225,25 @@ itc.directive("treenode", function ($compile)
         replace:true
     }
 });
+
+itc.controller("WorkspaceTabsCtrl", function ($scope)
+{
+    $scope.panes = [
+        {title:"Admin", type:"usecase", icon:"icon-eye-open", active:true, data:{id:3, name:"Admin", summary:"<h2>Directive info</h2><ul><li>This directive creates new scope.</li></ul><h2>Parameters</h2><ul>"
+                + "<li>ngInclude|src – {string} – angular expression evaluating to URL. If the source is a string constant, make sure you wrap it in quotes, e.g. src=\"'myPartialTemplate.html'\".</li>"
+                + "<li>onload(optional) – {string=} – Expression to evaluate when a new partial is loaded.</li>"
+                + "<li>autoscroll(optional) – {string=} – Whether ngInclude should call $anchorScroll to scroll the viewport after the content is loaded.<ul>"
+                + "<li>If the attribute is not set, disable scrolling.</li>" + "<li>If the attribute is set without value, enable scrolling.</li>"
+                + "<li>Otherwise enable scrolling only if the expression evaluates to truthy value.</li>" + "</ul></li></ul>"}},
+        {title:"Requester", type:"usecase", active:false, data:{id:2, name:"Requester"}}
+    ];
+
+    $scope.src = function (pane)
+    {
+        if ("usecase" == pane.type) {
+            return "template/pane/usecase.html";
+        } else {
+            throw new Error("Invalid pane type: " + pane.type);
+        }
+    }
+});

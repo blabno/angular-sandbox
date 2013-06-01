@@ -8,6 +8,26 @@
     <script src="js/tree.js"></script>
     <link href="css/bootstrap-combined.min.css" rel="stylesheet"/>
     <style type="text/css">
+        .workspace {
+            width: 100%;
+        }
+
+        .workspace tbody > tr > td {
+            vertical-align: top;
+        }
+
+        .workspace tbody > tr > td:nth-of-type(2) {
+            width: 5px;
+            background-color: #ccc;
+            border: 1px solid #aaa;
+            border-top: none;
+            border-bottom: none;
+        }
+
+        .workspace tbody > tr > td:nth-of-type(3) {
+            width: 20%;
+        }
+
         ul#treeRoot, .treenode > ul {
             list-style-type: none;
         }
@@ -29,30 +49,50 @@
             background-color: #aaa;
         }
 
+        .selectedNode {
+            word-break: break-word;
+        }
+
         [class^='icon-'].disabled {
             opacity: .3;
         }
     </style>
 </head>
 <body ng-app="ITC">
-<div ng-controller="TreeCtrl">
-    <div>selectedNode:<span id="selectedNode">{{selectedNode.name}}</span></div>
-    <div>selectedNode JSON:{{selectedNode}}</div>
-    <div class="controls">
-        <button ng-click="newPackage()" ng-disabled="null!=selectedNode && !isPackage(selectedNode)" class="btn" title="New package">
-            <i class="icon-folder-close"></i>
-        </button>
-        <button ng-click="newUsecase()" ng-disabled="!isPackage(selectedNode)" class="btn" title="New usecase">
-            <i class="icon-eye-open"></i>
-        </button>
-    </div>
-    <ul id="treeRoot">
-        <li ng-repeat="child in child.getChildren()">
-            <!--suppress HtmlUnknownTag -->
-            <treenode></treenode>
-        </li>
-    </ul>
-
-</div>
+<table class="workspace">
+    <tbody>
+    <tr>
+        <td ng-controller="WorkspaceTabsCtrl">
+            <tabs>
+                <pane heading="Welcome">Static content</pane>
+                <pane ng-repeat="pane in panes" heading="{{pane.title}}" active="pane.active" icon="{{pane.icon}}">
+                    <ng-include src="src(pane)"/>
+                </pane>
+            </tabs>
+        </td>
+        <td></td>
+        <td>
+            <div ng-controller="TreeCtrl">
+                <div class="controls">
+                    <button ng-click="newPackage()" ng-disabled="null!=selectedNode && !isPackage(selectedNode)" class="btn" tooltip="New package" tooltip-placement="bottom">
+                        <i class="icon-folder-close"></i>
+                    </button>
+                    <button ng-click="newUsecase()" ng-disabled="!isPackage(selectedNode)" class="btn" tooltip="New usecase" tooltip-placement="bottom">
+                        <i class="icon-eye-open"></i>
+                    </button>
+                </div>
+                <ul id="treeRoot">
+                    <li ng-repeat="child in child.getChildren()">
+                        <!--suppress HtmlUnknownTag -->
+                        <treenode></treenode>
+                    </li>
+                </ul>
+                <div>selectedNode:<span id="selectedNode">{{selectedNode.name}}</span></div>
+                <div class="selectedNode">selectedNode JSON:{{selectedNode}}</div>
+            </div>
+        </td>
+    </tr>
+    </tbody>
+</table>
 </body>
 </html>                                                                                                    `
