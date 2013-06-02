@@ -59,14 +59,14 @@
     </style>
 </head>
 <body ng-app="ITC">
-<table class="workspace">
+<table class="workspace" ng-controller="WorkspaceCtrl">
     <tbody>
     <tr>
-        <td ng-controller="WorkspaceTabsCtrl">
+        <td>
             <tabs>
                 <pane heading="Welcome">Static content</pane>
                 <pane ng-repeat="pane in panes" heading="{{pane.title}}" active="pane.active" icon="{{pane.icon}}">
-                    <ng-include src="src(pane)"/>
+                    <ng-include src="src(pane)"></ng-include>
                 </pane>
             </tabs>
         </td>

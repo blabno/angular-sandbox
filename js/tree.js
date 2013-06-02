@@ -1,7 +1,49 @@
 var itc = angular.module("ITC", ["ui.bootstrap"]);
 var NODE_TYPE_PACKAGE = "package";
 var NODE_TYPE_USECASE = "usecase";
-itc.factory("packageDAO", function ()
+itc.factory("Panes", function (PackageDAO)
+{
+    var panes = [
+        {title:"Admin", type:"usecase", icon:"icon-eye-open", active:true, data:{id:3, name:"Admin", summary:"<h2>Directive info</h2><ul><li>This directive creates new scope.</li></ul><h2>Parameters</h2><ul>"
+                + "<li>ngInclude|src – {string} – angular expression evaluating to URL. If the source is a string constant, make sure you wrap it in quotes, e.g. src=\"'myPartialTemplate.html'\".</li>"
+                + "<li>onload(optional) – {string=} – Expression to evaluate when a new partial is loaded.</li>"
+                + "<li>autoscroll(optional) – {string=} – Whether ngInclude should call $anchorScroll to scroll the viewport after the content is loaded.<ul>"
+                + "<li>If the attribute is not set, disable scrolling.</li>" + "<li>If the attribute is set without value, enable scrolling.</li>"
+                + "<li>Otherwise enable scrolling only if the expression evaluates to truthy value.</li>" + "</ul></li></ul>"}},
+        {title:"Requester", type:"usecase", active:false, data:{id:2, name:"Requester"}}
+    ];
+    return {
+        getOpenPanes:function ()
+        {
+            return panes;
+        },
+        openUsecase:function (usecaseId)
+        {
+            var usecase = PackageDAO.getUsecase(usecaseId);
+            var i;
+            for (i = 0; i < panes.length; i++) {
+                panes[i].active = false;
+            }
+            for (i = 0; i < panes.length; i++) {
+                if (panes[i].type == "usecase" && panes[i].data.id == usecase.id) {
+                    panes[i].active = true;
+                    return;
+                }
+            }
+            panes.push({title:usecase.name, type:"usecase", icon:"icon-eye-open", active:true, data:usecase});
+        },
+        close:function (pane)
+        {
+            var index = panes.indexOf(pane);
+            panes.splice(index, 1);
+            //Select a new pane if removed pane was selected
+            if (pane.active && panes.length > 0) {
+                panes[index < panes.length ? index : index - 1].active = true;
+            }
+        }
+    }
+});
+itc.factory("PackageDAO", function ()
 {
     /**
      * Mock data
@@ -62,10 +104,19 @@ itc.factory("packageDAO", function ()
             } else {
                 return nodeChildMap[parentId];
             }
+        },
+        persistUsecase:function (usecase)
+        {
+            usecase.id = nodes.length;
+            addChild(usecase.parentId, usecase);
+        },
+        getUsecase:function (usecaseId)
+        {
+            return nodes[usecaseId];
         }
     }
 });
-itc.factory("nodeFactory", function (packageDAO)
+itc.factory("nodeFactory", function (PackageDAO)
 {
     var create = function (pkg)
     {
@@ -75,7 +126,7 @@ itc.factory("nodeFactory", function (packageDAO)
         function initChildren(node)
         {
             if (undefined == node.children) {
-                var children = packageDAO.list(node.id);
+                var children = PackageDAO.list(node.id);
 
                 node.children = [];
                 for (var i = 0; i < children.length; i++) {
@@ -115,7 +166,7 @@ itc.factory("nodeFactory", function (packageDAO)
     }
 });
 
-itc.controller("TreeCtrl", function ($scope, packageDAO, nodeFactory)
+itc.controller("TreeCtrl", function ($scope, PackageDAO, nodeFactory)
 {
     $scope.child = nodeFactory.create({id:null, name:"Root", hasChildren:true, type:NODE_TYPE_PACKAGE});
     $scope.child.open = true;
@@ -162,7 +213,9 @@ itc.controller("TreeCtrl", function ($scope, packageDAO, nodeFactory)
         var name = prompt("Usecase name");
         if (null != name && name.trim().length > 0) {
             var parentNode = (null == $scope.selectedNode) ? $scope.child : $scope.selectedNode;
-            parentNode.addChild(nodeFactory.create({id:new Date().getTime(), name:name, hasChildren:false, type:NODE_TYPE_USECASE}));
+            var usecase = {id:new Date().getTime(), name:name, hasChildren:false, parentId:parentNode.id, type:NODE_TYPE_USECASE};
+            PackageDAO.persistUsecase(usecase);
+            parentNode.addChild(nodeFactory.create(usecase));
         }
     };
 
@@ -200,6 +253,9 @@ itc.controller("NodeCtrl", function ($scope)
 
     $scope.toggle = function ()
     {
+        if (this.isUseCase(getNode())) {
+            $scope.openUsecase(getNode());
+        }
         var node = getNode();
         if (!node.hasChildren) {
             return;
@@ -226,17 +282,9 @@ itc.directive("treenode", function ($compile)
     }
 });
 
-itc.controller("WorkspaceTabsCtrl", function ($scope)
+itc.controller("WorkspaceCtrl", function ($scope, Panes)
 {
-    $scope.panes = [
-        {title:"Admin", type:"usecase", icon:"icon-eye-open", active:true, data:{id:3, name:"Admin", summary:"<h2>Directive info</h2><ul><li>This directive creates new scope.</li></ul><h2>Parameters</h2><ul>"
-                + "<li>ngInclude|src – {string} – angular expression evaluating to URL. If the source is a string constant, make sure you wrap it in quotes, e.g. src=\"'myPartialTemplate.html'\".</li>"
-                + "<li>onload(optional) – {string=} – Expression to evaluate when a new partial is loaded.</li>"
-                + "<li>autoscroll(optional) – {string=} – Whether ngInclude should call $anchorScroll to scroll the viewport after the content is loaded.<ul>"
-                + "<li>If the attribute is not set, disable scrolling.</li>" + "<li>If the attribute is set without value, enable scrolling.</li>"
-                + "<li>Otherwise enable scrolling only if the expression evaluates to truthy value.</li>" + "</ul></li></ul>"}},
-        {title:"Requester", type:"usecase", active:false, data:{id:2, name:"Requester"}}
-    ];
+    $scope.panes = Panes.getOpenPanes();
 
     $scope.src = function (pane)
     {
@@ -245,5 +293,10 @@ itc.controller("WorkspaceTabsCtrl", function ($scope)
         } else {
             throw new Error("Invalid pane type: " + pane.type);
         }
-    }
+    };
+
+    $scope.openUsecase = function (usecase)
+    {
+        Panes.openUsecase(usecase.id);
+    };
 });
