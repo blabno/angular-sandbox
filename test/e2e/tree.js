@@ -29,7 +29,7 @@ describe("Tree", function ()
         expect(element('#treeRoot li:nth-of-type(2)').count()).toEqual(0);
     });
 
-    it("Should add 1 child node of first root node", function ()
+    it("Should add 1 package to first root node", function ()
     {
         browser().navigateTo("useCaseTree.html");
         expect(element('#treeRoot > li').count()).toEqual(3);
@@ -41,21 +41,42 @@ describe("Tree", function ()
         setPromptValue('New package');
         element('#newPackage').click();
         expect(element('#treeRoot > li:nth-of-type(1) ul li').count()).toEqual(4);
+        expect(element('#treeRoot > li:nth-of-type(1) ul li:last-child .name').text()).toEqual("New package");
+        expect(element('#treeRoot > li').count()).toEqual(3);
+    });
+
+    it("Should add 1 usecase to first root node", function ()
+    {
+        browser().navigateTo("useCaseTree.html");
+        expect(element('#treeRoot > li').count()).toEqual(3);
+        expect(element('#treeRoot > li:nth-of-type(1)').count()).toEqual(1);
+        expect(element('#treeRoot > li:nth-of-type(1) ul li').count()).toEqual(0);
+        element('#treeRoot > li:nth-of-type(1) .toggle').click();
+        element('#treeRoot > li:nth-of-type(1) .toggle').dblclick();
+        expect(element('#treeRoot > li:nth-of-type(1) ul li').count()).toEqual(3);
+        setPromptValue('New usecase');
+        element('#newUsecase').click();
+        expect(element('#treeRoot > li:nth-of-type(1) ul li').count()).toEqual(4);
+        expect(element('#treeRoot > li:nth-of-type(1) ul li:last-child .name').text()).toEqual("New usecase");
         expect(element('#treeRoot > li').count()).toEqual(3);
     });
 
     it("Should remove last child node of first root node", function ()
     {
+        browser().navigateTo("useCaseTree.html");
         expect(element('#treeRoot > li').count()).toEqual(3);
-        expect(element('#treeRoot > li:nth-of-type(1) ul li').count()).toEqual(4);
-        element('#treeRoot > li:nth-of-type(1) > div ul li:last-child button.btn-danger').click();
+        element('#treeRoot > li:nth-of-type(1) .toggle').dblclick();
         expect(element('#treeRoot > li:nth-of-type(1) ul li').count()).toEqual(3);
+        element('#treeRoot > li:nth-of-type(1) > div ul li:last-child button.btn-danger').click();
+        expect(element('#treeRoot > li:nth-of-type(1) ul li').count()).toEqual(2);
         expect(element('#treeRoot > li').count()).toEqual(3);
     });
 
     it("Should select root and child nodes one by one", function ()
     {
+        browser().navigateTo("useCaseTree.html");
         expect(element('#treeRoot > li').count()).toEqual(3);
+        element('#treeRoot > li:nth-of-type(1) .toggle').dblclick();
         expect(element('#treeRoot > li:nth-of-type(1) ul li').count()).toEqual(3);
         element('#treeRoot > li:nth-of-type(1) > div ul li:nth-of-type(3) .toggle').click();
         expect(element('#treeRoot > li').count()).toEqual(3);
