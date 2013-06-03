@@ -61,6 +61,45 @@ describe("Tree", function ()
         expect(element('#treeRoot > li').count()).toEqual(3);
     });
 
+    it("Should not be possible to add usecase without selecting node", function ()
+    {
+        browser().navigateTo("useCaseTree.html");
+        expect(element('#treeRoot > li').count()).toEqual(3);
+        expect(element('#selectedNode').text()).toEqual("");
+        expect(element('#newUsecase[disabled]').count()).toBe(1);
+        setPromptValue('New usecase');
+        element('#newUsecase').click();
+        expect(element('#treeRoot > li').count()).toEqual(3);
+    });
+
+    it("Should not be possible to add package to usecase", function ()
+    {
+        browser().navigateTo("useCaseTree.html");
+        expect(element('#newPackage[disabled]').count()).toBe(0);
+        element('#treeRoot > li:nth-of-type(1) .toggle').dblclick();
+        expect(element('#treeRoot  li').count()).toEqual(6);
+        element('#treeRoot > li:nth-of-type(1) ul li:last-child .toggle').click();
+        expect(element('#newPackage[disabled]').count()).toBe(1);
+        setPromptValue('New package');
+        element('#newPackage').click();
+        expect(element('#treeRoot  li').count()).toEqual(6);
+    });
+
+    it("Should not be possible to add usecase to usecase", function ()
+    {
+        browser().navigateTo("useCaseTree.html");
+        expect(element('#newUsecase[disabled]').count()).toBe(1);
+        element('#treeRoot > li:nth-of-type(1) .toggle').click();
+        element('#treeRoot > li:nth-of-type(1) .toggle').dblclick();
+        expect(element('#newUsecase[disabled]').count()).toBe(0);
+        expect(element('#treeRoot  li').count()).toEqual(6);
+        element('#treeRoot > li:nth-of-type(1) ul li:last-child .toggle').click();
+        expect(element('#newUsecase[disabled]').count()).toBe(1);
+        setPromptValue('New uscase');
+        element('#newUsecase').click();
+        expect(element('#treeRoot  li').count()).toEqual(6);
+    });
+
     it("Should remove last child node of first root node", function ()
     {
         browser().navigateTo("useCaseTree.html");
