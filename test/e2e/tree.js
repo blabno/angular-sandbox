@@ -13,9 +13,9 @@ describe("Tree", function ()
     it("Should toggle node 1 on click", function ()
     {
         expect(element('#treeRoot li:nth-of-type(1) ul li').count()).toEqual(0);
-        element('#treeRoot li:nth-of-type(1) .toggle').click();
+        element('#treeRoot li:nth-of-type(1) .toggle').dblclick();
         expect(element('#treeRoot li:nth-of-type(1) ul li').count()).toBeGreaterThan(0);
-        element('#treeRoot li:nth-of-type(1) .toggle').click();
+        element('#treeRoot li:nth-of-type(1) .toggle').dblclick();
         expect(element('#treeRoot li:nth-of-type(1) ul li').count()).toEqual(0);
     });
 
@@ -36,8 +36,10 @@ describe("Tree", function ()
         expect(element('#treeRoot > li:nth-of-type(1)').count()).toEqual(1);
         expect(element('#treeRoot > li:nth-of-type(1) ul li').count()).toEqual(0);
         element('#treeRoot > li:nth-of-type(1) .toggle').click();
+        element('#treeRoot > li:nth-of-type(1) .toggle').dblclick();
         expect(element('#treeRoot > li:nth-of-type(1) ul li').count()).toEqual(3);
-        element('#treeRoot > li:nth-of-type(1) > div > button.btn-primary').click();
+        setPromptValue('New package');
+        element('#newPackage').click();
         expect(element('#treeRoot > li:nth-of-type(1) ul li').count()).toEqual(4);
         expect(element('#treeRoot > li').count()).toEqual(3);
     });
@@ -55,22 +57,22 @@ describe("Tree", function ()
     {
         expect(element('#treeRoot > li').count()).toEqual(3);
         expect(element('#treeRoot > li:nth-of-type(1) ul li').count()).toEqual(3);
-        element('#treeRoot > li:nth-of-type(1) > div ul li:nth-of-type(3) button.select').click();
+        element('#treeRoot > li:nth-of-type(1) > div ul li:nth-of-type(3) .toggle').click();
         expect(element('#treeRoot > li').count()).toEqual(3);
         expect(element('#selectedNode').text()).toEqual("Rating");
-        element('#treeRoot > li:nth-of-type(1) > div ul li:nth-of-type(2) button.select').click();
+        element('#treeRoot > li:nth-of-type(1) > div ul li:nth-of-type(2) .toggle').click();
         expect(element('#treeRoot > li').count()).toEqual(3);
         expect(element('#selectedNode').text()).toEqual("Company");
-        element('#treeRoot > li:nth-of-type(1) > div ul li:nth-of-type(1) button.select').click();
+        element('#treeRoot > li:nth-of-type(1) > div ul li:nth-of-type(1) .toggle').click();
         expect(element('#treeRoot > li').count()).toEqual(3);
         expect(element('#selectedNode').text()).toEqual("Questionnaire");
-        element('#treeRoot > li:nth-of-type(1) > div > button.select').click();
+        element('#treeRoot > li:nth-of-type(1) > div > .head .toggle').click();
         expect(element('#treeRoot > li').count()).toEqual(3);
         expect(element('#selectedNode').text()).toEqual("Requester");
-        element('#treeRoot > li:nth-of-type(2) > div > button.select').click();
+        element('#treeRoot > li:nth-of-type(2) > div > .head .toggle').click();
         expect(element('#treeRoot > li').count()).toEqual(3);
         expect(element('#selectedNode').text()).toEqual("Supplier");
-        element('#treeRoot > li:nth-of-type(3) > div > button.select').click();
+        element('#treeRoot > li:nth-of-type(3) div > .head .toggle').click();
         expect(element('#treeRoot > li').count()).toEqual(3);
         expect(element('#selectedNode').text()).toEqual("Admin");
     });

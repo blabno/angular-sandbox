@@ -9,19 +9,14 @@ basePath = '';
 
 // list of files / patterns to load in the browser
 files = [
-    ANGULAR_SCENARIO,
-    ANGULAR_SCENARIO_ADAPTER,
-    'libs/angular.js',
-    'libs/angular-resource.js',
-    'libs/angular-mocks.js',
-    'js/blog.js',
-    'test/e2e/**/*.js'
+    ANGULAR_SCENARIO, ANGULAR_SCENARIO_ADAPTER, 'libs/angular.js', 'libs/angular-resource.js', 'libs/angular-mocks.js', 'libs/window-dialog-commands.js',
+    'js/blog.js', 'test/e2e/**/*.js'
 ];
 
 
 // list of files to exclude
 exclude = [
-  
+
 ];
 
 
