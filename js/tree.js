@@ -1,7 +1,7 @@
 var itc = angular.module("ITC", ["ui.bootstrap"]);
 var NODE_TYPE_PACKAGE = "package";
 var NODE_TYPE_USECASE = "usecase";
-itc.factory("Panes", function (PackageDAO)
+itc.factory("Panes", function (PackageDAO, ApplicationEventBus)
 {
     var panes = [
         {title: "Admin", type: "usecase", icon: "icon-eye-open", active: true, data: {id: 3, name: "Admin", summary: "<h2>Directive info</h2><ul><li>This directive creates new scope.</li></ul><h2>Parameters</h2><ul>"
@@ -12,6 +12,15 @@ itc.factory("Panes", function (PackageDAO)
                 + "<li>Otherwise enable scrolling only if the expression evaluates to truthy value.</li>" + "</ul></li></ul>"}},
         {title: "Requester", type: "usecase", active: false, data: {id: 2, name: "Requester"}}
     ];
+    ApplicationEventBus.subscribe(ApplicationEventBus.USECASE_REMOVED, function (event)
+    {
+        for (var i = 0; i < panes.length; i++) {
+            if ("usecase" == panes[i].type && event.id == panes[i].data.id) {
+                panes.splice(i, 1);
+                break;
+            }
+        }
+    });
     return {
         getOpenPanes: function ()
         {
@@ -43,20 +52,83 @@ itc.factory("Panes", function (PackageDAO)
         }
     }
 });
-itc.factory("PackageDAO", function ()
+itc.factory("ApplicationEventBus", function ()
+{
+    var listeners = {};
+    return {
+        PACKAGE_CHILDREN_MODIFIED: "PackageChildrenModified",
+        USECASE_REMOVED: "UsecaseRemoved",
+        PACKAGE_REMOVED: "PackageRemoved",
+        getEvents: function ()
+        {
+            var list = [];
+            for (var event in listeners) {
+                if (listeners.hasOwnProperty(event)) {
+                    list.push(event);
+                }
+
+            }
+            return list;
+        },
+        getListenersCount: function (event)
+        {
+            return listeners[event].length;
+        },
+        subscribe: function (eventName, listener)
+        {
+            console.debug("subscribing to event: " + eventName);
+            if (undefined == listeners[eventName]) {
+                listeners[eventName] = [];
+            }
+            listeners[eventName].push(listener);
+        },
+        unsubscribe: function (listener)
+        {
+            for (var event in listeners) {
+                if (!listeners.hasOwnProperty(event)) {
+                    continue;
+                }
+                var index = listeners[event].indexOf(listener);
+                if (index > -1) {
+                    listeners[event].splice(index, 1);
+                    break;
+                }
+            }
+        },
+        /**
+         * Notifies all listeners about event.
+         *
+         * This method is just a temporary thing
+         *
+         * @param event event to publish
+         */
+        broadcast: function (event)
+        {
+            var thisEventListeners = listeners[event.type];
+            if (undefined != thisEventListeners) {
+                console.debug("boradcasting event: " + event.type + " to " + thisEventListeners.length + " listeners");
+                for (var i = 0; i < thisEventListeners.length; i++) {
+                    thisEventListeners[i](event);
+                }
+            } else {
+                console.debug("boradcasting event: " + event.type + " to 0 listeners");
+            }
+        }
+    };
+});
+itc.factory("PackageDAO", function (ApplicationEventBus)
 {
     /**
      * Mock data
      **/
     var rootNodes = [
-        {id: 1, name: "Requester", hasChildren: true},
-        {id: 2, name: "Supplier", hasChildren: false},
-        {id: 3, name: "Admin", hasChildren: false}
+
     ];
     var nodes = [
         {}
     ];
     var nodeChildMap = [];
+    var mockDataInitialized = false;
 
     function addChild(parentIndex, node)
     {
@@ -66,6 +138,7 @@ itc.factory("PackageDAO", function ()
             parentNode = nodes[parentIndex];
             parentId = parentNode.id;
         }
+        node.parentId = parentId;
         nodes.push(node);
         if (null != parentIndex) {
             var children = nodeChildMap[parentId];
@@ -74,15 +147,67 @@ itc.factory("PackageDAO", function ()
             }
             children.push(node);
             parentNode.hasChildren = true;
+        } else {
+            rootNodes.push(node)
+        }
+        if (mockDataInitialized) {
+            ApplicationEventBus.broadcast({type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: parentId});
         }
     }
 
-    addChild(null, rootNodes[0]);
-    addChild(null, rootNodes[1]);
-    addChild(null, rootNodes[2]);
+    function removeNodeAndChildren(node)
+    {
+        if (NODE_TYPE_PACKAGE == node.type && undefined == node.parentId) {
+            var index = rootNodes.indexOf(node);
+            rootNodes.splice(index, 1);
+        }
+        if (mockDataInitialized && undefined != nodes[node.id]) {
+            if ("usecase" == node.type) {
+                ApplicationEventBus.broadcast({type: ApplicationEventBus.USECASE_REMOVED, id: node.id});
+            } else if ("package" == node.type) {
+                ApplicationEventBus.broadcast({type: ApplicationEventBus.PACKAGE_REMOVED, id: node.id});
+            }
+        }
+        delete nodes[node.id];
+        var children = nodeChildMap[node.id];
+        if (undefined != children) {
+            for (var i = 0; i < children.length; i++) {
+                removeNodeAndChildren(children[i]);
+            }
+        }
+    }
+
+    function removeNode(node)
+    {
+        removeNodeAndChildren(node);
+        var siblings = nodeChildMap[node.parentId];
+        if (undefined != siblings) {
+            var index = siblings.indexOf(node);
+            siblings.splice(index, 1);
+            if (0 == siblings.length) {
+                delete nodeChildMap[node.parentId];
+                var parentNode = nodes[node.parentId];
+                if (undefined != parentNode) {
+                    parentNode.hasChildren = false;
+                }
+            }
+        }
+        if (mockDataInitialized) {
+            if (NODE_TYPE_USECASE == node.type) {
+                ApplicationEventBus.broadcast({type: ApplicationEventBus.USECASE_REMOVED, id: node.id});
+            } else if (NODE_TYPE_PACKAGE == node.type) {
+                ApplicationEventBus.broadcast({type: ApplicationEventBus.PACKAGE_REMOVED, id: node.id});
+            }
+            ApplicationEventBus.broadcast({type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: node.parentId});
+        }
+    }
+
+    addChild(null, {id: 1, name: "Requester", hasChildren: true});
+    addChild(null, {id: 2, name: "Supplier", hasChildren: false});
+    addChild(null, {id: 3, name: "Admin", hasChildren: false});
 
     var node;
-    for (var i = 5; i < 100; i++) {
+    for (var i = 4; i < 100; i++) {
         node = {id: i, name: "Node " + i, hasChildren: false};
         var parentIndex = Math.max(2, Math.floor(Math.random() * (nodes.length - 2)));
         /**We don't add children to Requester*/
@@ -100,6 +225,7 @@ itc.factory("PackageDAO", function ()
             node.type = NODE_TYPE_USECASE;
         }
     }
+    mockDataInitialized = true;
     /**
      * End of mock data
      */
@@ -115,6 +241,18 @@ itc.factory("PackageDAO", function ()
                 return nodeChildMap[parentId];
             }
         },
+        persistPackage: function (pkg)
+        {
+            pkg.id = nodes.length;
+            addChild(pkg.parentId, pkg);
+        },
+        removePackage: function (packageId)
+        {
+            var node = nodes[packageId];
+            if (undefined != node) {
+                removeNode(node);
+            }
+        },
         persistUsecase: function (usecase)
         {
             usecase.id = nodes.length;
@@ -123,10 +261,17 @@ itc.factory("PackageDAO", function ()
         getUsecase: function (usecaseId)
         {
             return nodes[usecaseId];
+        },
+        removeUsecase: function (usecaseId)
+        {
+            var node = nodes[usecaseId];
+            if (undefined != node) {
+                removeNode(node);
+            }
         }
     }
 });
-itc.factory("nodeFactory", function (PackageDAO)
+itc.factory("nodeFactory", function (PackageDAO, ApplicationEventBus)
 {
     var create = function (pkg)
     {
@@ -146,10 +291,20 @@ itc.factory("nodeFactory", function (PackageDAO)
             }
         }
 
-        return {
+        var packageChildrenModifiedHandler = function (event)
+        {
+            if (ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED == event.type && event.id == node.id) {
+                delete node.children;
+                initChildren(node);
+                node.hasChildren = node.children.length > 0;
+                node.open = node.open && node.hasChildren;
+            }
+        };
+
+        var node = {
             type: pkg.type, id: pkg.id, name: pkg.name, getChildren: function ()
             {
-                if (!this.open) {
+                if (!this.open && undefined != this.id) {
                     return [];
                 }
                 initChildren(this);
@@ -163,20 +318,35 @@ itc.factory("nodeFactory", function (PackageDAO)
             },
             removeChild: function (child)
             {
+                child.__destroy();
+                if (NODE_TYPE_USECASE == child.type) {
+                    PackageDAO.removeUsecase(child.id);
+                } else {
+                    PackageDAO.removePackage(child.id);
+                }
                 initChildren(this);
-                var index = this.children.indexOf(child);
-                this.children.splice(index, 1);
                 this.hasChildren = this.children.length > 0;
                 this.open = this.open && this.hasChildren;
+            },
+            __destroy: function ()
+            {
+                ApplicationEventBus.unsubscribe(packageChildrenModifiedHandler);
+                if (undefined != this.children) {
+                    for (var i = 0; i < this.children.length; i++) {
+                        this.children[i].__destroy();
+                    }
+                }
             }
         };
+        ApplicationEventBus.subscribe(ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, packageChildrenModifiedHandler);
+        return  node;
     };
     return {
         create: create
     }
 });
 
-itc.controller("TreeCtrl", function ($scope, PackageDAO, nodeFactory)
+itc.controller("TreeCtrl", function ($scope, PackageDAO, ApplicationEventBus, nodeFactory)
 {
     $scope.child = nodeFactory.create({id: null, name: "Root", hasChildren: true, type: NODE_TYPE_PACKAGE});
     $scope.child.open = true;
@@ -184,7 +354,11 @@ itc.controller("TreeCtrl", function ($scope, PackageDAO, nodeFactory)
     $scope.selectedNode = null;
     $scope.select = function (node)
     {
-        $scope.selectedNode = node;
+        if ($scope.selectedNode == node) {
+            $scope.selectedNode = null;
+        } else {
+            $scope.selectedNode = node;
+        }
     };
 
     $scope.isSelected = function (node)
@@ -202,18 +376,15 @@ itc.controller("TreeCtrl", function ($scope, PackageDAO, nodeFactory)
         return null != node && NODE_TYPE_USECASE == node.type;
     };
 
-    $scope.remove = function (node)
-    {
-        return null != node && NODE_TYPE_PACKAGE == node.type;
-    };
     $scope.newPackage = function ()
     {
         var name = prompt("Package name");
         if (null != name && name.trim().length > 0) {
             var parentNode = (null == $scope.selectedNode) ? $scope.child : $scope.selectedNode;
-            parentNode.addChild(nodeFactory.create({id: new Date().getTime(), name: name, hasChildren: false, type: NODE_TYPE_PACKAGE}));
+            PackageDAO.persistPackage({name: name, hasChildren: false, parentId: parentNode.id, type: NODE_TYPE_PACKAGE});
         }
     };
+
     $scope.newUsecase = function ()
     {
         if (null == $scope.selectedNode || !$scope.isPackage($scope.selectedNode)) {
@@ -223,10 +394,33 @@ itc.controller("TreeCtrl", function ($scope, PackageDAO, nodeFactory)
         var name = prompt("Usecase name");
         if (null != name && name.trim().length > 0) {
             var parentNode = (null == $scope.selectedNode) ? $scope.child : $scope.selectedNode;
-            var usecase = {id: new Date().getTime(), name: name, hasChildren: false, parentId: parentNode.id, type: NODE_TYPE_USECASE};
-            PackageDAO.persistUsecase(usecase);
-            parentNode.addChild(nodeFactory.create(usecase));
+            PackageDAO.persistUsecase({name: name, hasChildren: false, parentId: parentNode.id, type: NODE_TYPE_USECASE});
         }
+    };
+
+    var nodeRemovedHandler = function (event)
+    {
+        var node = $scope.selectedNode;
+        if (undefined != node && node.id == event.id) {
+            if (ApplicationEventBus.PACKAGE_REMOVED == event.type && NODE_TYPE_PACKAGE == node.type) {
+                $scope.selectedNode = null;
+            } else if (ApplicationEventBus.USECASE_REMOVED == event.type && NODE_TYPE_USECASE == node.type) {
+                $scope.selectedNode = null;
+            }
+        }
+    };
+    ApplicationEventBus.subscribe(ApplicationEventBus.PACKAGE_REMOVED, nodeRemovedHandler);
+    ApplicationEventBus.subscribe(ApplicationEventBus.USECASE_REMOVED, nodeRemovedHandler);
+
+    $scope.getEvents = function ()
+    {
+
+        return ApplicationEventBus.getEvents();
+    };
+
+    $scope.getListenersCount = function (event)
+    {
+        return ApplicationEventBus.getListenersCount(event);
     };
 
 });
@@ -309,4 +503,9 @@ itc.controller("WorkspaceCtrl", function ($scope, Panes)
     {
         Panes.openUsecase(usecase.id);
     };
+
+    $scope.closePane = function (pane)
+    {
+        Panes.close(pane);
+    }
 });

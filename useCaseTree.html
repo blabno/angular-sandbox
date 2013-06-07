@@ -66,6 +66,7 @@
             <tabs>
                 <pane heading="Welcome">Static content</pane>
                 <pane ng-repeat="pane in panes" heading="{{pane.title}}" active="pane.active" icon="{{pane.icon}}">
+                    <span class="icon-remove-circle" ng-click="closePane(pane)" tooltip="Close"></span>
                     <ng-include src="src(pane)"></ng-include>
                 </pane>
             </tabs>
@@ -91,6 +92,8 @@
                 </ul>
                 <div>selectedNode:<span id="selectedNode">{{selectedNode.name}}</span></div>
                 <div class="selectedNode">selectedNode JSON:{{selectedNode}}</div>
+                <div>events:{{getEvents()}}</div>
+                <div ng-repeat="event in getEvents()">{{event}} listeners: {{getListenersCount(event)}}</div>
             </div>
         </td>
     </tr>
