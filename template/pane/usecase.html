@@ -1,2 +1,7 @@
-<h1>{{pane.data.name}}</h1>
-<div ng-bind-html-unsafe="pane.data.summary"></div>
+<div class="usecase">
+    <h1>{{pane.data.name}}</h1>
+
+    <div ng-bind-html-unsafe="pane.getSummaryPreview()" class="summary"></div>
+    <!--suppress HtmlFormInputWithoutLabel -->
+    <textarea ng-model="pane.data.summary" class="summary" keep-in-view=".tab-content"></textarea>
+</div>

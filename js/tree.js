@@ -3,15 +3,7 @@ var NODE_TYPE_PACKAGE = "package";
 var NODE_TYPE_USECASE = "usecase";
 itc.factory("Panes", function (PackageDAO, ApplicationEventBus)
 {
-    var panes = [
-        {title: "Admin", type: "usecase", icon: "icon-eye-open", active: true, data: {id: 3, name: "Admin", summary: "<h2>Directive info</h2><ul><li>This directive creates new scope.</li></ul><h2>Parameters</h2><ul>"
-                + "<li>ngInclude|src – {string} – angular expression evaluating to URL. If the source is a string constant, make sure you wrap it in quotes, e.g. src=\"'myPartialTemplate.html'\".</li>"
-                + "<li>onload(optional) – {string=} – Expression to evaluate when a new partial is loaded.</li>"
-                + "<li>autoscroll(optional) – {string=} – Whether ngInclude should call $anchorScroll to scroll the viewport after the content is loaded.<ul>"
-                + "<li>If the attribute is not set, disable scrolling.</li>" + "<li>If the attribute is set without value, enable scrolling.</li>"
-                + "<li>Otherwise enable scrolling only if the expression evaluates to truthy value.</li>" + "</ul></li></ul>"}},
-        {title: "Requester", type: "usecase", active: false, data: {id: 2, name: "Requester"}}
-    ];
+    var panes = [];
     ApplicationEventBus.subscribe(ApplicationEventBus.USECASE_REMOVED, function (event)
     {
         for (var i = 0; i < panes.length; i++) {
@@ -21,7 +13,7 @@ itc.factory("Panes", function (PackageDAO, ApplicationEventBus)
             }
         }
     });
-    return {
+    return  {
         getOpenPanes: function ()
         {
             return panes;
@@ -39,7 +31,13 @@ itc.factory("Panes", function (PackageDAO, ApplicationEventBus)
                     return;
                 }
             }
-            panes.push({title: usecase.name, type: "usecase", icon: "icon-eye-open", active: true, data: usecase});
+            panes.push({title: usecase.name, type: "usecase", icon: "icon-eye-open", active: true, data: usecase, getSummaryPreview: function ()
+            {
+                //noinspection JSPotentiallyInvalidConstructorUsage
+                var converter = new Showdown.converter();
+                return converter.makeHtml(this.data.summary || "");
+
+            }});
         },
         close: function (pane)
         {
@@ -507,5 +505,45 @@ itc.controller("WorkspaceCtrl", function ($scope, Panes)
     $scope.closePane = function (pane)
     {
         Panes.close(pane);
+    }
+});
+
+itc.directive("keepInView", function ()
+{
+    return {
+        restrict: 'A',
+        scope: false,
+        link: function (scope, element, attrs)
+        {
+            var $window = jQuery(window);
+
+            function reattach()
+            {
+                //noinspection JSUnresolvedVariable
+                var parent = element.parents(attrs.keepInView);
+                var elementOuterHeight = element.outerHeight();
+                if (parent.offset().top + parent.innerHeight() + $window.scrollTop() <= $window.innerHeight()) {
+                    element.css({
+                        position: 'static',
+                        width: '100%'
+                    });
+                    parent.css({paddingBottom: 0});
+                } else {
+                    element.css({
+                        position: 'fixed',
+                        bottom: 0,
+                        width: parent.innerWidth()
+                    });
+                    parent.css({paddingBottom: elementOuterHeight + "px"});
+                }
+            }
+
+            element.resize(reattach);
+            $window.resize(reattach);
+            scope.$watch(attrs.ngModel, function ()
+            {
+                reattach();
+            });
+        }
     }
 });
