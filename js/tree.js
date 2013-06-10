@@ -1,3 +1,32 @@
+var sample_usecase_summary = "Using this tool" + "---------------\n\n"
+        + "This page lets you create HTML by entering text in a simple format that's easy to read and write." + "  - Type Markdown text in the left window\n\n"
+        + "  - See the HTML in the right\n\n"
+        + "Markdown is a lightweight markup language based on the formatting conventions that people naturally use in email.  As [John Gruber] writes on the [Markdown site] [1]:\n\n"
+        + "> The overriding design goal for Markdown's" + "> formatting syntax is to make it as readable " + "> as possible. The idea is that a\n\n"
+        + "> Markdown-formatted document should be" + "> publishable as-is, as plain text, without" + "> looking like it's been marked up with tags\n\n"
+        + "> or formatting instructions.\n\n"
+        + "This document is written in Markdown; you can see the plain-text version on the left.  To get a feel for Markdown's syntax, type some text into the left window and watch the results in the right.  You can see a Markdown syntax guide by switching the right-hand window from *Preview* to *Syntax Guide*.\n\n"
+        + "Showdown is a Javascript port of Markdown.  You can get the full [source code] by clicking on the version number at the bottom of the page.\n\n"
+        + "**Start with a [blank page] or edit this document in the left window.**" + "  [john gruber]: http://daringfireball.net/\n\n"
+        + "  [1]: http://daringfireball.net/projects/markdown/" + "  [source code]: http://www.attacklab.net/showdown-v0.9.zip\n\n"
+        + "  [blank page]: ?blank=1 \"Clear all text\"" + "# This is an H1" + "## This is an H2" + "###### This is an H6" + "# This is an H1 #\n\n"
+        + "## This is an H2 ##" + "### This is an H3 ######" + "> This is a blockquote with two paragraphs. Lorem ipsum dolor sit amet,\n\n"
+        + "> consectetuer adipiscing elit. Aliquam hendrerit mi posuere lectus." + "> Vestibulum enim wisi, viverra nec, fringilla in, laoreet vitae, risus.\n\n"
+        + "> " + "> Donec sit amet nisl. Aliquam semper ipsum sit amet velit. Suspendisse" + "> id sem consectetuer libero luctus adipiscing.\n\n"
+        + "> This is the first level of quoting." + ">" + "> > This is nested blockquote." + ">" + "> Back to the first level." + "> ## This is a header.\n\n"
+        + "> " + "> 1.   This is the first list item." + "> 2.   This is the second list item." + "> " + "> Here's some example code:" + "> \n\n"
+        + ">     return shell_exec(\"echo $input | $markdown_script\");" + "*   Red" + "*   Green" + "*   Blue" + "Atos" + "+   Red" + "+   Green" + "+   Blue\n\n"
+        + "Portos" + "1.  Bird" + "2.  McHale" + "3.  Parish" + "Aramis" + "3. Bird" + "1. McHale" + "8. Parish" + "Multi\n\n"
+        + "*   This is a list item with two paragraphs." + "    This is the second paragraph in the list item. You're\n\n"
+        + "only required to indent the first line. Lorem ipsum dolor" + "sit amet, consectetuer adipiscing elit." + "*   Another item in the same list.\n\n"
+        + "This is a normal paragraph:" + "    This is a code block." + "Here is an example of AppleScript:" + "    tell application \"Foo\"" + "        beep\n\n"
+        + "    end tell" + "* * *" + "***" + "*****" + "- - -" + "---------------------------------------\n\n"
+        + "This is [an example](http://example.com/ \"Title\") inline link." + "[This link](http://example.net/) has no title attribute.\n\n"
+        + "See my [About](/about/) page for details.   " + "This is [an example] [id] reference-style link.\n\n"
+        + "[id]: http://example.com/  \"Optional Title Here\"" + "*single asterisks*" + "_single underscores_" + "**double asterisks**\n\n"
+        + "__double underscores__" + "un*frigging*believable" + "A single backtick in a code span: `` ` ``\n\n"
+        + "A backtick-delimited string in a code span: `` `foo` ``" + "![Alt text](https://itcrowd.pl/images/carousel/carousel-3.jpg)\n\n"
+        + "![Alt text](https://itcrowd.pl/images/carousel/carousel-1.jpg \"Optional title\")";
 var itc = angular.module("ITC", ["ui.bootstrap"]);
 var NODE_TYPE_PACKAGE = "package";
 var NODE_TYPE_USECASE = "usecase";
@@ -221,6 +250,9 @@ itc.factory("PackageDAO", function (ApplicationEventBus)
             node.type = NODE_TYPE_PACKAGE;
         } else {
             node.type = NODE_TYPE_USECASE;
+            var start = parseInt(Math.random() * sample_usecase_summary.length);
+            var end = parseInt(Math.min(sample_usecase_summary.length-1,Math.max(start+500, Math.random() * sample_usecase_summary.length)));
+            node.summary = sample_usecase_summary.substring(start, end);
         }
     }
     mockDataInitialized = true;
