@@ -111,12 +111,12 @@ itc.factory("ApplicationEventBus", function ()
         {
             var thisEventListeners = listeners[event.type];
             if (undefined != thisEventListeners) {
-                console.debug("boradcasting event: " + event.type + " to " + thisEventListeners.length + " listeners");
+                console.debug("broadcasting event: " + event.type + " to " + thisEventListeners.length + " listeners");
                 for (var i = 0; i < thisEventListeners.length; i++) {
                     thisEventListeners[i](event);
                 }
             } else {
-                console.debug("boradcasting event: " + event.type + " to 0 listeners");
+                console.debug("broadcasting event: " + event.type + " to 0 listeners");
             }
         }
     };
@@ -146,6 +146,10 @@ itc.factory("PackageDAO", function ($resource)
                 }
             });
         },
+        getPackage: function (packageId, success, error)
+        {
+            PackageREST.get({id: packageId}, success, error);
+        },
         removePackage: function (packageId, callback)
         {
             var restPkg = new PackageREST({id: packageId});
@@ -173,9 +177,9 @@ itc.factory("UsecaseDAO", function ($resource)
                 }
             });
         },
-        getUsecase: function (usecaseId, callback)
+        getUsecase: function (usecaseId, success, error)
         {
-            UsecaseREST.get({id: usecaseId}, callback);
+            UsecaseREST.get({id: usecaseId}, success, error);
         },
         removeUsecase: function (usecaseId, callback)
         {
@@ -198,7 +202,9 @@ itc.factory("nodeFactory", function (PackageDAO, UsecaseDAO, ApplicationEventBus
         }
         function initChildren(node)
         {
-            if (undefined == node.children) {
+            var open = node.open;
+            if (undefined == node.children && !node.loadingChildren) {
+                node.loadingChildren = true;
                 /**
                  * We need to immediately initialise this collection, because scope may observe it several times before XHR request finishes with data.
                  */
@@ -212,21 +218,32 @@ itc.factory("nodeFactory", function (PackageDAO, UsecaseDAO, ApplicationEventBus
                         node.children.push(child);
                     }
                     node.hasChildren = node.children.length > 0;
-                    node.open = node.open && node.hasChildren;
+                    node.open = open && node.hasChildren;
+                    node.loadingChildren = false;
                 });
             }
         }
 
+        var destroyChildren = function (node)
+        {
+            if (undefined != node.children) {
+                for (var i = 0; i < node.children.length; i++) {
+                    node.children[i].__destroy();
+                }
+            }
+        };
+
         var packageChildrenModifiedHandler = function (event)
         {
-            if (ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED == event.type && event.id == node.id) {
+            if (ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED == event.type && event.id == node.id && event.source != node) {
+                destroyChildren(node);
                 delete node.children;
                 initChildren(node);
             }
         };
 
         var node = {
-            type: pkg.type, id: pkg.id, name: pkg.name, getChildren: function ()
+            type: pkg.type, id: pkg.id, parentId: pkg.parentId, name: pkg.name, getChildren: function ()
             {
                 if (!this.open && undefined != this.id) {
                     return [];
@@ -239,24 +256,79 @@ itc.factory("nodeFactory", function (PackageDAO, UsecaseDAO, ApplicationEventBus
                 this.children.push(child);
                 this.hasChildren = true;
                 this.open = true;
+                ApplicationEventBus.broadcast({source: this, type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: this.id});
+            },
+            isChildrenInitialized: function ()
+            {
+                return undefined != this.children;
             },
             removeChild: function (child)
             {
                 child.__destroy();
+                initChildren(this);
+                var index = this.children.indexOf(child);
+                if (index > -1) {
+                    this.children.splice(index, 1);
+                }
                 if (NODE_TYPE_USECASE == child.type) {
                     UsecaseDAO.removeUsecase(child.id, function (usecaseId)
                     {
-                        ApplicationEventBus.broadcast({type: ApplicationEventBus.USECASE_REMOVED, id: usecaseId});
-                        ApplicationEventBus.broadcast({type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: node.id});
+                        ApplicationEventBus.broadcast({source: node, type: ApplicationEventBus.USECASE_REMOVED, id: usecaseId});
+                        ApplicationEventBus.broadcast({source: node, type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: node.id});
 
                     });
                 } else {
                     PackageDAO.removePackage(child.id, function (packageId)
                     {
-                        ApplicationEventBus.broadcast({type: ApplicationEventBus.PACKAGE_REMOVED, id: packageId});
-                        ApplicationEventBus.broadcast({type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: node.id});
-
+                        ApplicationEventBus.broadcast({source: node, type: ApplicationEventBus.PACKAGE_REMOVED, id: packageId});
                     });
+                }
+            },
+            refresh: function ()
+            {
+                if (NODE_TYPE_USECASE == this.type) {
+                    UsecaseDAO.getUsecase(this.id, function (result)
+                    {
+                        angular.extend(node, result);
+                    }, function (response)
+                    {
+                        if (404 == response.status) {
+                            ApplicationEventBus.broadcast({source: node, type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: node.parentId});
+                            alert("Usecase " + node.id + " has been removed");
+                        } else {
+                            var stringifiedResponse;
+                            try {
+                                stringifiedResponse = JSON.stringify(response);
+                            } catch (e) {
+                                stringifiedResponse = response.data;
+                            }
+                            throw new Error("Cannot get package #" + node.id + ". XHR response (" + response.status + "):" + stringifiedResponse);
+                        }
+                    });
+                } else if (NODE_TYPE_PACKAGE == this.type) {
+                    PackageDAO.getPackage(this.id, function (result)
+                    {
+                        destroyChildren(node);
+                        delete node.children;
+                        angular.extend(node, result);
+                        initChildren(node);
+                    }, function (response)
+                    {
+                        if (404 == response.status) {
+                            ApplicationEventBus.broadcast({source: node, type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: node.parentId});
+                            alert("Package " + node.id + " has been removed");
+                        } else {
+                            var stringifiedResponse;
+                            try {
+                                stringifiedResponse = JSON.stringify(response);
+                            } catch (e) {
+                                stringifiedResponse = response.data;
+                            }
+                            throw new Error("Cannot get package #" + node.id + ". XHR response (" + response.status + "):" + stringifiedResponse);
+                        }
+                    });
+                } else {
+                    throw new Error("Refresh: Unsupported node type: " + this.type);
                 }
             },
             __destroy: function ()
@@ -315,8 +387,12 @@ itc.controller("TreeCtrl", function ($scope, PackageDAO, UsecaseDAO, Application
             var pkg = {name: name, hasChildren: false, parentId: parentNode.id, type: NODE_TYPE_PACKAGE};
             PackageDAO.persistPackage(pkg, function (pkg)
             {
-                parentNode.addChild(pkg);
-                ApplicationEventBus.broadcast({type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: parentNode.id});
+                if (parentNode.isChildrenInitialized()) {
+                    parentNode.addChild(nodeFactory.create(pkg));
+                } else {
+                    parentNode.open = true;
+                    parentNode.hasChildren = true;
+                }
             });
         }
     };
@@ -333,8 +409,12 @@ itc.controller("TreeCtrl", function ($scope, PackageDAO, UsecaseDAO, Application
             var usecase = {name: name, hasChildren: false, parentId: parentNode.id, type: NODE_TYPE_USECASE};
             UsecaseDAO.persistUsecase(usecase, function ()
             {
-                parentNode.addChild(usecase);
-                ApplicationEventBus.broadcast({type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: parentNode.id});
+                if (parentNode.isChildrenInitialized()) {
+                    parentNode.addChild(nodeFactory.create(usecase));
+                } else {
+                    parentNode.open = true;
+                    parentNode.hasChildren = true;
+                }
             });
         }
     };
@@ -387,13 +467,18 @@ itc.controller("NodeCtrl", function ($scope)
         return getNode().getChildren();
     };
 
-    $scope.removeMe = function ()
+    $scope.remove = function ()
     {
         var thisNode = getNode();
         getParentNode().removeChild(thisNode);
         if ($scope.selectedNode == thisNode) {
             $scope.select(null);
         }
+    };
+
+    $scope.refresh = function ()
+    {
+        getNode().refresh();
     };
 
     $scope.toggle = function ()

@@ -305,10 +305,13 @@ StaticServlet.prototype.handleAPIRequest = function(req, res) {
         oK(JSON.stringify(rootNodes));
     } else if (apiPath.match(LIST_PACKAGE_CONTENTS)) {
         id = parseInt(LIST_PACKAGE_CONTENTS.exec(apiPath)[1]);
-        var children = nodeChildMap[id];
-        if (undefined == children) {
+        if (undefined == nodes[id]) {
             send404();
         } else {
+            var children = nodeChildMap[id];
+            if (undefined == children) {
+                children = [];
+            }
             oK(JSON.stringify(children));
         }
     } else if (apiPath.match(GET_PACKAGE)) {

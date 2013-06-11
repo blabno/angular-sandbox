@@ -5,7 +5,12 @@
             <i ng-class="{'icon-folder-close':isPackage(child) && !isOpen(),'icon-folder-open':isPackage(child) && isOpen(),'disabled':isPackage(child) && !child.hasChildren, 'icon-eye-open':isUseCase(child)}"></i>
             <span class="name">{{child.name}}</span>
         </span>
-        <button class="btn btn-danger" ng-click="removeMe()">Remove</button>
+        <span class="btns">
+            <button class="btn btn-danger" ng-click="remove()">Remove</button>
+            <button class="btn" ng-click="refresh()">
+                <span class="icon-refresh"></span>
+            </button>
+        </span>
     </div>
     <ul ng-show="isOpen()"></ul>
 </div>
