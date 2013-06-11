@@ -1,13 +1,20 @@
-<div class="usecase">
-    <h1>{{pane.data.name}}</h1>
+<div class="usecase" ng-controller="UsecaseCtrl">
+    <div class="btns">
+        <button class="btn btn-primary" ng-click="save()" ng-disabled="!isModified()" tooltip="Save" tooltip-placement="bottom">
+            <span class="icon-ok icon-white"></span>
+        </button>
+        <button class="btn" ng-click="close()" tooltip="Close" tooltip-placement="bottom">
+            <span class="icon-remove-circle"></span>
+        </button>
+    </div>
+    <h1>{{usecase.name}}</h1>
 
-    <div ng-bind-html-unsafe="pane.getSummaryPreview()" class="summary"></div>
-    <div class="editor" keep-in-view=".tab-content">
+    <div ng-bind-html-unsafe="getSummaryPreview()" class="summary" ng-dblclick="edit()"></div>
+    <div class="editor" keep-in-view=".tab-content" ng-model="usecase.summary" ng-show="isEditMode()">
         <div class="controls">
-            <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank" class="icon-question-sign" tooltip="syntax"
-               tooltip-placement="left"></a>
+            <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank" class="icon-question-sign" tooltip="syntax" tooltip-placement="left"></a>
         </div>
         <!--suppress HtmlFormInputWithoutLabel -->
-        <textarea ng-model="pane.data.summary" class="summary" ng-disabled="!pane.ready"></textarea>
+        <textarea ng-model="usecase.summary" class="summary" ng-disabled="!pane.ready"></textarea>
     </div>
 </div>

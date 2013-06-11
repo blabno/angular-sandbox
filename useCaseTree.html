@@ -89,6 +89,11 @@
         .usecase .editor .controls {
             text-align: right;
         }
+
+        .usecase .btns {
+            text-align: right;
+            padding-right: 20px;
+        }
     </style>
 </head>
 <body ng-app="ITC">
@@ -99,7 +104,6 @@
             <tabs>
                 <pane heading="Welcome">Static content</pane>
                 <pane ng-repeat="pane in panes" heading="{{pane.title}}" active="pane.active" icon="{{pane.icon}}">
-                    <span class="icon-remove-circle" ng-click="closePane(pane)" tooltip="Close"></span>
                     <ng-include src="src(pane)"></ng-include>
                 </pane>
             </tabs>
@@ -108,12 +112,11 @@
         <td>
             <div ng-controller="TreeCtrl">
                 <div class="controls">
-                    <button id="newPackage" ng-click="newPackage()" ng-disabled="null!=selectedNode && !isPackage(selectedNode)" class="btn"
-                            tooltip="New package" tooltip-placement="bottom">
+                    <button id="newPackage" ng-click="newPackage()" ng-disabled="null!=selectedNode && !isPackage(selectedNode)" class="btn" tooltip="New package"
+                            tooltip-placement="bottom">
                         <i class="icon-folder-close"></i>
                     </button>
-                    <button id="newUsecase" ng-click="newUsecase()" ng-disabled="!isPackage(selectedNode)" class="btn" tooltip="New usecase"
-                            tooltip-placement="bottom">
+                    <button id="newUsecase" ng-click="newUsecase()" ng-disabled="!isPackage(selectedNode)" class="btn" tooltip="New usecase" tooltip-placement="bottom">
                         <i class="icon-eye-open"></i>
                     </button>
                 </div>
