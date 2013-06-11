@@ -1,36 +1,7 @@
-var sample_usecase_summary = "Using this tool" + "---------------\n\n"
-        + "This page lets you create HTML by entering text in a simple format that's easy to read and write." + "  - Type Markdown text in the left window\n\n"
-        + "  - See the HTML in the right\n\n"
-        + "Markdown is a lightweight markup language based on the formatting conventions that people naturally use in email.  As [John Gruber] writes on the [Markdown site] [1]:\n\n"
-        + "> The overriding design goal for Markdown's" + "> formatting syntax is to make it as readable " + "> as possible. The idea is that a\n\n"
-        + "> Markdown-formatted document should be" + "> publishable as-is, as plain text, without" + "> looking like it's been marked up with tags\n\n"
-        + "> or formatting instructions.\n\n"
-        + "This document is written in Markdown; you can see the plain-text version on the left.  To get a feel for Markdown's syntax, type some text into the left window and watch the results in the right.  You can see a Markdown syntax guide by switching the right-hand window from *Preview* to *Syntax Guide*.\n\n"
-        + "Showdown is a Javascript port of Markdown.  You can get the full [source code] by clicking on the version number at the bottom of the page.\n\n"
-        + "**Start with a [blank page] or edit this document in the left window.**" + "  [john gruber]: http://daringfireball.net/\n\n"
-        + "  [1]: http://daringfireball.net/projects/markdown/" + "  [source code]: http://www.attacklab.net/showdown-v0.9.zip\n\n"
-        + "  [blank page]: ?blank=1 \"Clear all text\"" + "# This is an H1" + "## This is an H2" + "###### This is an H6" + "# This is an H1 #\n\n"
-        + "## This is an H2 ##" + "### This is an H3 ######" + "> This is a blockquote with two paragraphs. Lorem ipsum dolor sit amet,\n\n"
-        + "> consectetuer adipiscing elit. Aliquam hendrerit mi posuere lectus." + "> Vestibulum enim wisi, viverra nec, fringilla in, laoreet vitae, risus.\n\n"
-        + "> " + "> Donec sit amet nisl. Aliquam semper ipsum sit amet velit. Suspendisse" + "> id sem consectetuer libero luctus adipiscing.\n\n"
-        + "> This is the first level of quoting." + ">" + "> > This is nested blockquote." + ">" + "> Back to the first level." + "> ## This is a header.\n\n"
-        + "> " + "> 1.   This is the first list item." + "> 2.   This is the second list item." + "> " + "> Here's some example code:" + "> \n\n"
-        + ">     return shell_exec(\"echo $input | $markdown_script\");" + "*   Red" + "*   Green" + "*   Blue" + "Atos" + "+   Red" + "+   Green" + "+   Blue\n\n"
-        + "Portos" + "1.  Bird" + "2.  McHale" + "3.  Parish" + "Aramis" + "3. Bird" + "1. McHale" + "8. Parish" + "Multi\n\n"
-        + "*   This is a list item with two paragraphs." + "    This is the second paragraph in the list item. You're\n\n"
-        + "only required to indent the first line. Lorem ipsum dolor" + "sit amet, consectetuer adipiscing elit." + "*   Another item in the same list.\n\n"
-        + "This is a normal paragraph:" + "    This is a code block." + "Here is an example of AppleScript:" + "    tell application \"Foo\"" + "        beep\n\n"
-        + "    end tell" + "* * *" + "***" + "*****" + "- - -" + "---------------------------------------\n\n"
-        + "This is [an example](http://example.com/ \"Title\") inline link." + "[This link](http://example.net/) has no title attribute.\n\n"
-        + "See my [About](/about/) page for details.   " + "This is [an example] [id] reference-style link.\n\n"
-        + "[id]: http://example.com/  \"Optional Title Here\"" + "*single asterisks*" + "_single underscores_" + "**double asterisks**\n\n"
-        + "__double underscores__" + "un*frigging*believable" + "A single backtick in a code span: `` ` ``\n\n"
-        + "A backtick-delimited string in a code span: `` `foo` ``" + "![Alt text](https://itcrowd.pl/images/carousel/carousel-3.jpg)\n\n"
-        + "![Alt text](https://itcrowd.pl/images/carousel/carousel-1.jpg \"Optional title\")";
-var itc = angular.module("ITC", ["ui.bootstrap"]);
+var itc = angular.module("ITC", ["ui.bootstrap", "ngResource"]);
 var NODE_TYPE_PACKAGE = "package";
 var NODE_TYPE_USECASE = "usecase";
-itc.factory("Panes", function (PackageDAO, ApplicationEventBus)
+itc.factory("Panes", function (PackageDAO, UsecaseDAO, ApplicationEventBus)
 {
     var panes = [];
     ApplicationEventBus.subscribe(ApplicationEventBus.USECASE_REMOVED, function (event)
@@ -49,24 +20,31 @@ itc.factory("Panes", function (PackageDAO, ApplicationEventBus)
         },
         openUsecase: function (usecaseId)
         {
-            var usecase = PackageDAO.getUsecase(usecaseId);
             var i;
             for (i = 0; i < panes.length; i++) {
                 panes[i].active = false;
             }
             for (i = 0; i < panes.length; i++) {
-                if (panes[i].type == "usecase" && panes[i].data.id == usecase.id) {
+                if (panes[i].type == "usecase" && panes[i].usecaseId == usecaseId) {
                     panes[i].active = true;
                     return;
                 }
             }
-            panes.push({title: usecase.name, type: "usecase", icon: "icon-eye-open", active: true, data: usecase, getSummaryPreview: function ()
+            var pane = {usecaseId: usecaseId, title: "Loading usecase #"
+                    + usecaseId, type: "usecase", icon: "icon-eye-open", active: true, getSummaryPreview: function ()
             {
                 //noinspection JSPotentiallyInvalidConstructorUsage
                 var converter = new Showdown.converter();
-                return converter.makeHtml(this.data.summary || "");
+                return this.data ? converter.makeHtml(this.data.summary || "") : "Loading...";
 
-            }});
+            }, ready: false};
+            panes.push(pane);
+            var usecase = UsecaseDAO.getUsecase(usecaseId, function (usecase)
+            {
+                pane.title = usecase.name;
+                pane.data = usecase;
+                pane.ready = true;
+            });
         },
         close: function (pane)
         {
@@ -143,165 +121,75 @@ itc.factory("ApplicationEventBus", function ()
         }
     };
 });
-itc.factory("PackageDAO", function (ApplicationEventBus)
+itc.factory("PackageDAO", function ($resource)
 {
-    /**
-     * Mock data
-     **/
-    var rootNodes = [
-
-    ];
-    var nodes = [
-        {}
-    ];
-    var nodeChildMap = [];
-    var mockDataInitialized = false;
-
-    function addChild(parentIndex, node)
-    {
-        var parentNode;
-        var parentId;
-        if (null != parentIndex) {
-            parentNode = nodes[parentIndex];
-            parentId = parentNode.id;
-        }
-        node.parentId = parentId;
-        nodes.push(node);
-        if (null != parentIndex) {
-            var children = nodeChildMap[parentId];
-            if (undefined == children) {
-                nodeChildMap[parentId] = children = [];
-            }
-            children.push(node);
-            parentNode.hasChildren = true;
-        } else {
-            rootNodes.push(node)
-        }
-        if (mockDataInitialized) {
-            ApplicationEventBus.broadcast({type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: parentId});
-        }
-    }
-
-    function removeNodeAndChildren(node)
-    {
-        if (NODE_TYPE_PACKAGE == node.type && undefined == node.parentId) {
-            var index = rootNodes.indexOf(node);
-            rootNodes.splice(index, 1);
-        }
-        if (mockDataInitialized && undefined != nodes[node.id]) {
-            if ("usecase" == node.type) {
-                ApplicationEventBus.broadcast({type: ApplicationEventBus.USECASE_REMOVED, id: node.id});
-            } else if ("package" == node.type) {
-                ApplicationEventBus.broadcast({type: ApplicationEventBus.PACKAGE_REMOVED, id: node.id});
-            }
-        }
-        delete nodes[node.id];
-        var children = nodeChildMap[node.id];
-        if (undefined != children) {
-            for (var i = 0; i < children.length; i++) {
-                removeNodeAndChildren(children[i]);
-            }
-        }
-    }
-
-    function removeNode(node)
-    {
-        removeNodeAndChildren(node);
-        var siblings = nodeChildMap[node.parentId];
-        if (undefined != siblings) {
-            var index = siblings.indexOf(node);
-            siblings.splice(index, 1);
-            if (0 == siblings.length) {
-                delete nodeChildMap[node.parentId];
-                var parentNode = nodes[node.parentId];
-                if (undefined != parentNode) {
-                    parentNode.hasChildren = false;
-                }
-            }
-        }
-        if (mockDataInitialized) {
-            if (NODE_TYPE_USECASE == node.type) {
-                ApplicationEventBus.broadcast({type: ApplicationEventBus.USECASE_REMOVED, id: node.id});
-            } else if (NODE_TYPE_PACKAGE == node.type) {
-                ApplicationEventBus.broadcast({type: ApplicationEventBus.PACKAGE_REMOVED, id: node.id});
-            }
-            ApplicationEventBus.broadcast({type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: node.parentId});
-        }
-    }
-
-    addChild(null, {id: 1, name: "Requester", hasChildren: true});
-    addChild(null, {id: 2, name: "Supplier", hasChildren: false});
-    addChild(null, {id: 3, name: "Admin", hasChildren: false});
-
-    var node;
-    for (var i = 4; i < 100; i++) {
-        node = {id: i, name: "Node " + i, hasChildren: false};
-        var parentIndex = Math.max(2, Math.floor(Math.random() * (nodes.length - 2)));
-        /**We don't add children to Requester*/
-        addChild(parentIndex, node);
-    }
-    addChild(1, {id: i - 1, name: "Questionnaire"});
-    addChild(1, {id: i, name: "Company"});
-    addChild(1, {id: i + 1, name: "Rating"});
-    for (i = 0; i < nodes.length; i++) {
-        node = nodes[i];
-        var children = nodeChildMap[node.id];
-        if (undefined != children && children.length > 0) {
-            node.type = NODE_TYPE_PACKAGE;
-        } else {
-            node.type = NODE_TYPE_USECASE;
-            var start = parseInt(Math.random() * sample_usecase_summary.length);
-            var end = parseInt(Math.min(sample_usecase_summary.length-1,Math.max(start+500, Math.random() * sample_usecase_summary.length)));
-            node.summary = sample_usecase_summary.substring(start, end);
-        }
-    }
-    mockDataInitialized = true;
-    /**
-     * End of mock data
-     */
+    var PackageREST = $resource("/api/package/:id/:controller", {id: "@id"},
+            {'query': {method: 'GET', isArray: true}, 'contents': {method: 'GET', isArray: true, params: {controller: "contents"}}});
     return {
-        list: function (parentId)
+        list: function (parentId, callback)
         {
-            console.debug("Lazy loading children of " + parentId);
             if (undefined == parentId) {
-                return rootNodes;
-            } else if (undefined == nodeChildMap[parentId]) {
-                return [];
+                PackageREST.query(callback);
             } else {
-                return nodeChildMap[parentId];
+                PackageREST.contents({id: parentId}, callback);
             }
+
         },
-        persistPackage: function (pkg)
+        persistPackage: function (pkg, callback)
         {
-            pkg.id = nodes.length;
-            addChild(pkg.parentId, pkg);
+            var restPkg = new PackageREST(pkg);
+            restPkg.$save(function (result)
+            {
+                angular.extend(pkg, result);
+                if (callback instanceof Function) {
+                    callback(pkg);
+                }
+            });
         },
-        removePackage: function (packageId)
+        removePackage: function (packageId, callback)
         {
-            var node = nodes[packageId];
-            if (undefined != node) {
-                removeNode(node);
-            }
-        },
-        persistUsecase: function (usecase)
-        {
-            usecase.id = nodes.length;
-            addChild(usecase.parentId, usecase);
-        },
-        getUsecase: function (usecaseId)
-        {
-            return nodes[usecaseId];
-        },
-        removeUsecase: function (usecaseId)
-        {
-            var node = nodes[usecaseId];
-            if (undefined != node) {
-                removeNode(node);
-            }
+            var restPkg = new PackageREST({id: packageId});
+            restPkg.$delete(function ()
+            {
+                if (callback instanceof Function) {
+                    callback(packageId);
+                }
+            });
         }
     }
 });
-itc.factory("nodeFactory", function (PackageDAO, ApplicationEventBus)
+itc.factory("UsecaseDAO", function ($resource)
+{
+    var UsecaseREST = $resource("/api/usecase/:id", {id: "@id"});
+    return {
+        persistUsecase: function (usecase, callback)
+        {
+            var restUsecase = new UsecaseREST(usecase);
+            restUsecase.$save(function (result)
+            {
+                angular.extend(usecase, result);
+                if (callback instanceof Function) {
+                    callback(usecase);
+                }
+            });
+        },
+        getUsecase: function (usecaseId, callback)
+        {
+            UsecaseREST.get({id: usecaseId}, callback);
+        },
+        removeUsecase: function (usecaseId, callback)
+        {
+            var restUsecase = new UsecaseREST({id: usecaseId});
+            restUsecase.$delete(function ()
+            {
+                if (callback instanceof Function) {
+                    callback(usecaseId);
+                }
+            });
+        }
+    }
+});
+itc.factory("nodeFactory", function (PackageDAO, UsecaseDAO, ApplicationEventBus)
 {
     var create = function (pkg)
     {
@@ -311,13 +199,21 @@ itc.factory("nodeFactory", function (PackageDAO, ApplicationEventBus)
         function initChildren(node)
         {
             if (undefined == node.children) {
-                var children = PackageDAO.list(node.id);
-
+                /**
+                 * We need to immediately initialise this collection, because scope may observe it several times before XHR request finishes with data.
+                 */
                 node.children = [];
-                for (var i = 0; i < children.length; i++) {
-                    var child = create(children[i]);
-                    node.children.push(child);
-                }
+                console.debug("Lazy loading children of " + node.id);
+                PackageDAO.list(node.id, function (children)
+                {
+                    node.children = [];
+                    for (var i = 0; i < children.length; i++) {
+                        var child = create(children[i]);
+                        node.children.push(child);
+                    }
+                    node.hasChildren = node.children.length > 0;
+                    node.open = node.open && node.hasChildren;
+                });
             }
         }
 
@@ -326,8 +222,6 @@ itc.factory("nodeFactory", function (PackageDAO, ApplicationEventBus)
             if (ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED == event.type && event.id == node.id) {
                 delete node.children;
                 initChildren(node);
-                node.hasChildren = node.children.length > 0;
-                node.open = node.open && node.hasChildren;
             }
         };
 
@@ -350,13 +244,20 @@ itc.factory("nodeFactory", function (PackageDAO, ApplicationEventBus)
             {
                 child.__destroy();
                 if (NODE_TYPE_USECASE == child.type) {
-                    PackageDAO.removeUsecase(child.id);
+                    UsecaseDAO.removeUsecase(child.id, function (usecaseId)
+                    {
+                        ApplicationEventBus.broadcast({type: ApplicationEventBus.USECASE_REMOVED, id: usecaseId});
+                        ApplicationEventBus.broadcast({type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: node.id});
+
+                    });
                 } else {
-                    PackageDAO.removePackage(child.id);
+                    PackageDAO.removePackage(child.id, function (packageId)
+                    {
+                        ApplicationEventBus.broadcast({type: ApplicationEventBus.PACKAGE_REMOVED, id: packageId});
+                        ApplicationEventBus.broadcast({type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: node.id});
+
+                    });
                 }
-                initChildren(this);
-                this.hasChildren = this.children.length > 0;
-                this.open = this.open && this.hasChildren;
             },
             __destroy: function ()
             {
@@ -376,7 +277,7 @@ itc.factory("nodeFactory", function (PackageDAO, ApplicationEventBus)
     }
 });
 
-itc.controller("TreeCtrl", function ($scope, PackageDAO, ApplicationEventBus, nodeFactory)
+itc.controller("TreeCtrl", function ($scope, PackageDAO, UsecaseDAO, ApplicationEventBus, nodeFactory)
 {
     $scope.child = nodeFactory.create({id: null, name: "Root", hasChildren: true, type: NODE_TYPE_PACKAGE});
     $scope.child.open = true;
@@ -411,7 +312,12 @@ itc.controller("TreeCtrl", function ($scope, PackageDAO, ApplicationEventBus, no
         var name = prompt("Package name");
         if (null != name && name.trim().length > 0) {
             var parentNode = (null == $scope.selectedNode) ? $scope.child : $scope.selectedNode;
-            PackageDAO.persistPackage({name: name, hasChildren: false, parentId: parentNode.id, type: NODE_TYPE_PACKAGE});
+            var pkg = {name: name, hasChildren: false, parentId: parentNode.id, type: NODE_TYPE_PACKAGE};
+            PackageDAO.persistPackage(pkg, function (pkg)
+            {
+                parentNode.addChild(pkg);
+                ApplicationEventBus.broadcast({type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: parentNode.id});
+            });
         }
     };
 
@@ -424,7 +330,12 @@ itc.controller("TreeCtrl", function ($scope, PackageDAO, ApplicationEventBus, no
         var name = prompt("Usecase name");
         if (null != name && name.trim().length > 0) {
             var parentNode = (null == $scope.selectedNode) ? $scope.child : $scope.selectedNode;
-            PackageDAO.persistUsecase({name: name, hasChildren: false, parentId: parentNode.id, type: NODE_TYPE_USECASE});
+            var usecase = {name: name, hasChildren: false, parentId: parentNode.id, type: NODE_TYPE_USECASE};
+            UsecaseDAO.persistUsecase(usecase, function ()
+            {
+                parentNode.addChild(usecase);
+                ApplicationEventBus.broadcast({type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: parentNode.id});
+            });
         }
     };
 
@@ -559,6 +470,7 @@ itc.directive("keepInView", function ()
                         position: 'static',
                         width: '100%'
                     });
+                    element.children().css({width: '100%'});
                     parent.css({paddingBottom: 0});
                 } else {
                     element.css({
@@ -566,6 +478,7 @@ itc.directive("keepInView", function ()
                         bottom: 0,
                         width: parent.innerWidth()
                     });
+                    element.children().css({width: parent.innerWidth()});
                     parent.css({paddingBottom: elementOuterHeight + "px"});
                 }
             }

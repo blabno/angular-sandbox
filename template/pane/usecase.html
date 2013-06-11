@@ -2,6 +2,12 @@
     <h1>{{pane.data.name}}</h1>
 
     <div ng-bind-html-unsafe="pane.getSummaryPreview()" class="summary"></div>
-    <!--suppress HtmlFormInputWithoutLabel -->
-    <textarea ng-model="pane.data.summary" class="summary" keep-in-view=".tab-content"></textarea>
+    <div class="editor" keep-in-view=".tab-content">
+        <div class="controls">
+            <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank" class="icon-question-sign" tooltip="syntax"
+               tooltip-placement="left"></a>
+        </div>
+        <!--suppress HtmlFormInputWithoutLabel -->
+        <textarea ng-model="pane.data.summary" class="summary" ng-disabled="!pane.ready"></textarea>
+    </div>
 </div>
