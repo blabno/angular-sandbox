@@ -1,6 +1,9 @@
 Learning AngularJS
 ===
 
+Currently most advanced example is useCaseTree.html. To run it you will nedd to start web-server.js on node.js (see e2e tests section below)
+since it uses Ajax to load tree data.
+
 To run tests from IntelliJ Idea you need to first install "node.js", then from npm console install karma
 (previously known as testacular) (npm install -g karma).
 
