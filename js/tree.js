@@ -361,13 +361,12 @@ itc.controller("UsecaseCtrl", function ($scope, UsecaseDAO, ApplicationEventBus)
     var markdownConverver = new Showdown.converter();
 
     var originalUsecase , editMode;
-    var undwatchPaneData = $scope.$watch("pane.data", function (value)
+    $scope.$watch("pane.data", function (value)
     {
         if (originalUsecase == null && value != null) {
             originalUsecase = angular.extend({}, value);
         }
         $scope.usecase = value;
-        undwatchPaneData();
     });
 
     $scope.isModified = function ()

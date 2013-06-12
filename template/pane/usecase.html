@@ -4,7 +4,7 @@
                 tooltip-placement="bottom">
             <span class="icon-ok icon-white"></span>
         </button>
-        <button class="btn btn-primary" accesskey="e" ng-click="edit()" ng-hide="isEditMode()" tooltip="Edit" tooltip-placement="bottom">
+        <button class="btn btn-primary" accesskey="e" ng-click="edit()" ng-hide="isEditMode()" ng-disabled="!pane.ready" tooltip="Edit" tooltip-placement="bottom">
             <span class="icon-edit icon-white"></span>
         </button>
         <button class="btn btn-danger" accesskey="e" ng-click="exitEdit()" ng-show="isEditMode()" tooltip="Exit edit mode" tooltip-placement="bottom">
