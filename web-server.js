@@ -363,7 +363,7 @@ StaticServlet.prototype.handleAPIRequest = function (req, res)
                 handlePost(function (body)
                 {
                     try {
-                        nodes[id] = JSON.parse(body);
+                        nodes[id] = util._extend(nodes[id],JSON.parse(body));
                         oK(JSON.stringify(nodes[id]));
                     } catch (e) {
                         send400(e);
