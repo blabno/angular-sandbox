@@ -1,3 +1,4 @@
+//TODO Close tabs when any of parent packages removed
 var itc = angular.module("ITC", ["ui.bootstrap", "ngResource"]);
 var NODE_TYPE_PACKAGE = "package";
 var NODE_TYPE_USECASE = "usecase";
@@ -345,7 +346,7 @@ itc.factory("nodeFactory", function (PackageDAO, UsecaseDAO, ApplicationEventBus
 itc.controller("UsecaseCtrl", function ($scope, UsecaseDAO)
 {
     //noinspection JSPotentiallyInvalidConstructorUsage
-    var markdownConverver = new Showdown.converter();
+    var markdownConverver = new Showdown.converter({extensions: ['agodo']});
 
     var originalUsecase , editMode;
     $scope.$watch("pane.data", function (value)
@@ -368,7 +369,8 @@ itc.controller("UsecaseCtrl", function ($scope, UsecaseDAO)
     $scope.edit = function ()
     {
         editMode = true;
-    }
+    };
+
     $scope.getSummaryPreview = function ()
     {
         return this.usecase ? markdownConverver.makeHtml(this.usecase.summary || "") : "Loading...";
