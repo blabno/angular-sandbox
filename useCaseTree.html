@@ -2,99 +2,10 @@
 <html>
 <head>
     <title></title>
-    <script src="libs/showdown.js"></script>
+    <link href="css/bootstrap-combined.min.css" rel="stylesheet"/>
+    <link href="css/style.css" rel="stylesheet"/>
     <script src="libs/jquery.js"></script>
     <script src="libs/jquery.resize.js"></script>
-    <script src="libs/angular.js"></script>
-    <script src="libs/angular-resource.js"></script>
-    <script src="libs/angular-ui-bootstrap.js"></script>
-    <script src="js/tree.js"></script>
-    <link href="css/bootstrap-combined.min.css" rel="stylesheet"/>
-    <style type="text/css">
-        .workspace {
-            width: 100%;
-        }
-
-        .workspace tbody > tr > td {
-            vertical-align: top;
-        }
-
-        .workspace tbody > tr > td:nth-of-type(2) {
-            width: 5px;
-            background-color: #ccc;
-            border: 1px solid #aaa;
-            border-top: none;
-            border-bottom: none;
-        }
-
-        .workspace tbody > tr > td:nth-of-type(3) {
-            width: 20%;
-        }
-
-        ul#treeRoot, .treenode > ul {
-            list-style-type: none;
-        }
-
-        .treenode .toggle {
-            cursor: pointer;
-            user-select: none;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-        }
-
-        .treenode > .head .btns {
-            visibility: hidden;
-        }
-
-        .treenode > .head:hover .btns {
-            visibility: visible;
-        }
-
-        .treenode.selected > .head .toggle  .name {
-            color: #fff;
-            background-color: #aaa;
-        }
-
-        .selectedNode {
-            word-break: break-all;
-        }
-
-        [class^='icon-'].disabled {
-            opacity: .3;
-        }
-
-        .usecase {
-            position: relative;
-        }
-
-        .usecase .summary {
-            marign-bottom: 150px;
-        }
-
-        .usecase textarea {
-            height: 150px;
-            width: 100%;
-            box-sizing: border-box;
-            -moz-box-sizing: border-box;
-            -webkit-box-sizing: border-box;
-        }
-
-        .tab-content {
-            overflow-y: visible;
-        }
-
-        .usecase .editor .controls {
-            text-align: right;
-        }
-
-        .usecase .btns {
-            text-align: right;
-            padding-right: 20px;
-        }
-    </style>
 </head>
 <body ng-app="ITC">
 <table class="workspace" ng-controller="WorkspaceCtrl">
@@ -135,5 +46,10 @@
     </tr>
     </tbody>
 </table>
+<script src="libs/showdown.js"></script>
+<script src="libs/angular.js"></script>
+<script src="libs/angular-resource.js"></script>
+<script src="libs/angular-ui-bootstrap.js"></script>
+<script src="js/tree.js"></script>
 </body>
-</html>                                                                                                    `
+</html>
