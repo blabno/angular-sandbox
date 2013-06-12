@@ -1,4 +1,4 @@
-<div class="usecase" ng-controller="UsecaseCtrl">
+<div class="usecase" ng-controller="UsecaseCtrl" keytips="pane.active,isModified()">
     <div class="btns">
         <button class="btn btn-primary" accesskey="s" ng-click="save()" ng-show="isEditMode()" ng-disabled="!isModified()" tooltip="Save"
                 tooltip-placement="bottom">

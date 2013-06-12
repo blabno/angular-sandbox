@@ -655,3 +655,24 @@ itc.directive("keepInView", function ()
         }
     }
 });
+
+itc.directive("keytips", function ()
+{
+    return {
+        restrict: 'A',
+        scope: false,
+        link: function (scope, element, attrs)
+        {
+            var watchExpressions = attrs['keytips'].split(",");
+            for (var i = 0; i < watchExpressions.length; i++) {
+                var expression = watchExpressions[i];
+                scope.$watch(expression, function (value)
+                {
+                    if (value) {
+                        jQuery(element).keyTips();
+                    }
+                });
+            }
+        }
+    }
+});
