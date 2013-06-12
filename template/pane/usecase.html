@@ -1,13 +1,25 @@
 <div class="usecase" ng-controller="UsecaseCtrl">
     <div class="btns">
-        <button class="btn btn-primary" ng-click="save()" ng-disabled="!isModified()" tooltip="Save" tooltip-placement="bottom">
+        <button class="btn btn-primary" accesskey="s" ng-click="save()" ng-show="isEditMode()" ng-disabled="!isModified()" tooltip="Save"
+                tooltip-placement="bottom">
             <span class="icon-ok icon-white"></span>
         </button>
-        <button class="btn" ng-click="close()" tooltip="Close" tooltip-placement="bottom">
+        <button class="btn btn-primary" accesskey="e" ng-click="edit()" ng-hide="isEditMode()" tooltip="Edit" tooltip-placement="bottom">
+            <span class="icon-edit icon-white"></span>
+        </button>
+        <button class="btn btn-danger" accesskey="e" ng-click="exitEdit()" ng-show="isEditMode()" tooltip="Exit edit mode" tooltip-placement="bottom">
+            <span class="icon-eject icon-white"></span>
+        </button>
+        <button class="btn" ng-click="close()" accesskey="q" tooltip="Close" tooltip-placement="bottom">
             <span class="icon-remove-circle"></span>
         </button>
     </div>
-    <h1>{{usecase.name}}</h1>
+    <h1 ng-dblclick="edit()" ng-hide="isEditMode()">{{usecase.name}}</h1>
+
+    <div ng-show="isEditMode()">
+        <label for="name">Usecase name</label>
+        <input type="text" id="name" class="usecase-name" ng-model="usecase.name"/>
+    </div>
 
     <div ng-bind-html-unsafe="getSummaryPreview()" class="summary" ng-dblclick="edit()"></div>
     <div class="editor" keep-in-view=".tab-content" ng-model="usecase.summary" ng-show="isEditMode()">

@@ -56,6 +56,7 @@ itc.factory("ApplicationEventBus", function ()
     return {
         PACKAGE_CHILDREN_MODIFIED: "PackageChildrenModified",
         USECASE_REMOVED: "UsecaseRemoved",
+        USECASE_MODIFIED: "UsecaseModified",
         PACKAGE_REMOVED: "PackageRemoved",
         getEvents: function ()
         {
@@ -235,6 +236,13 @@ itc.factory("nodeFactory", function (PackageDAO, UsecaseDAO, ApplicationEventBus
             }
         };
 
+        var usecaseModifiedHandler = function (event)
+        {
+            if (ApplicationEventBus.USECASE_MODIFIED == event.type && event.id == node.id && event.source != node) {
+                node.name = event.usecase.name;
+            }
+        };
+
         var node = {
             type: pkg.type, id: pkg.id, parentId: pkg.parentId, name: pkg.name, getChildren: function ()
             {
@@ -327,6 +335,7 @@ itc.factory("nodeFactory", function (PackageDAO, UsecaseDAO, ApplicationEventBus
             __destroy: function ()
             {
                 ApplicationEventBus.unsubscribe(packageChildrenModifiedHandler);
+                ApplicationEventBus.unsubscribe(usecaseModifiedHandler);
                 if (undefined != this.children) {
                     for (var i = 0; i < this.children.length; i++) {
                         this.children[i].__destroy();
@@ -334,7 +343,11 @@ itc.factory("nodeFactory", function (PackageDAO, UsecaseDAO, ApplicationEventBus
                 }
             }
         };
-        ApplicationEventBus.subscribe(ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, packageChildrenModifiedHandler);
+        if (NODE_TYPE_PACKAGE == pkg.type) {
+            ApplicationEventBus.subscribe(ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, packageChildrenModifiedHandler);
+        } else if (NODE_TYPE_USECASE == pkg.type) {
+            ApplicationEventBus.subscribe(ApplicationEventBus.USECASE_MODIFIED, usecaseModifiedHandler);
+        }
         return  node;
     };
     return {
@@ -342,23 +355,25 @@ itc.factory("nodeFactory", function (PackageDAO, UsecaseDAO, ApplicationEventBus
     }
 });
 
-itc.controller("UsecaseCtrl", function ($scope, UsecaseDAO)
+itc.controller("UsecaseCtrl", function ($scope, UsecaseDAO, ApplicationEventBus)
 {
     //noinspection JSPotentiallyInvalidConstructorUsage
     var markdownConverver = new Showdown.converter();
 
     var originalUsecase , editMode;
-    $scope.$watch("pane.data", function (value)
+    var undwatchPaneData = $scope.$watch("pane.data", function (value)
     {
         if (originalUsecase == null && value != null) {
             originalUsecase = angular.extend({}, value);
         }
         $scope.usecase = value;
+        undwatchPaneData();
     });
 
     $scope.isModified = function ()
     {
-        return originalUsecase != null && this.usecase != null && originalUsecase.summary != this.usecase.summary;
+        return originalUsecase != null && this.usecase != null && (originalUsecase.summary != this.usecase.summary || originalUsecase.name
+                != this.usecase.name);
     };
     $scope.isEditMode = function ()
     {
@@ -369,6 +384,21 @@ itc.controller("UsecaseCtrl", function ($scope, UsecaseDAO)
     {
         editMode = true;
     };
+    $scope.exitEdit = function ()
+    {
+        if (this.isModified()) {
+            if (!confirm("There are changes. Do you want to quit without saving?")) {
+                return false;
+            }
+            UsecaseDAO.getUsecase(this.usecase.id, function (usecase)
+            {
+                angular.extend(originalUsecase, usecase);
+                angular.extend($scope.usecase, usecase);
+            });
+        }
+        editMode = false;
+        return true;
+    };
 
     $scope.getSummaryPreview = function ()
     {
@@ -377,14 +407,8 @@ itc.controller("UsecaseCtrl", function ($scope, UsecaseDAO)
 
     $scope.close = function ()
     {
-        if (this.isModified()) {
-            if (!confirm("There are changes. Do you want to quit without saving?")) {
-                return;
-            }
-            UsecaseDAO.getUsecase(this.usecase.id, function (usecase)
-            {
-                angular.extend($scope.usecase, usecase);
-            });
+        if (!this.exitEdit()) {
+            return;
         }
         this.closePane(this.pane);
     };
@@ -393,8 +417,10 @@ itc.controller("UsecaseCtrl", function ($scope, UsecaseDAO)
     {
         UsecaseDAO.persistUsecase(this.usecase, function (result)
         {
-            originalUsecase = result;
-            $scope.usecase = result;
+            originalUsecase = angular.extend({}, result);
+            $scope.usecase = angular.extend({}, result);
+            ApplicationEventBus.broadcast({type: ApplicationEventBus.USECASE_MODIFIED, id: originalUsecase.id, usecase: originalUsecase});
+
         });
     };
 
