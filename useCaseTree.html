@@ -12,9 +12,21 @@
 <table class="workspace" ng-controller="WorkspaceCtrl">
     <tbody>
     <tr>
-        <td>
+        <td id="center">
             <tabs>
-                <pane heading="Welcome">Static content</pane>
+                <pane heading="Welcome">
+<!--This text should not be indented-->
+#Welcome
+With this tool you can add usecases and organize them in packages.
+Note that usecase must be nested in some package. It cannot be top level element.
+
+#Editing usecases
+Double click usecase node on the tree to open a new details tab.
+
+If you want to edit the usecase click edit button or double click on usecase headline or summary.
+
+For faster navigation you can use keyboard shortcuts (simply hit ALT or ALT+SHIFT to see available shortcuts).
+                </pane>
                 <pane ng-repeat="pane in panes" heading="{{pane.title}}" active="pane.active" icon="{{pane.icon}}">
                     <ng-include src="src(pane)"></ng-include>
                 </pane>
@@ -22,28 +34,35 @@
         </td>
         <td></td>
         <td>
-            <div ng-controller="TreeCtrl">
-                <div class="controls">
-                    <button id="newPackage" ng-click="newPackage()" ng-disabled="null!=selectedNode && !isPackage(selectedNode)" class="btn"
-                            tooltip="New package" tooltip-placement="bottom">
-                        <i class="icon-folder-close"></i>
-                    </button>
-                    <button id="newUsecase" ng-click="newUsecase()" ng-disabled="!isPackage(selectedNode)" class="btn" tooltip="New usecase"
-                            tooltip-placement="bottom">
-                        <i class="icon-eye-open"></i>
-                    </button>
-                </div>
-                <ul id="treeRoot">
-                    <li ng-repeat="child in child.getChildren()">
-                        <!--suppress HtmlUnknownTag -->
-                        <treenode></treenode>
-                    </li>
-                </ul>
-                <div>selectedNode:<span id="selectedNode">{{selectedNode.name}}</span></div>
-                <div class="selectedNode">selectedNode JSON:{{selectedNode}}</div>
-                <div>events:{{getEvents()}}</div>
-                <div ng-repeat="event in getEvents()">{{event}} listeners: {{getListenersCount(event)}}</div>
-            </div>
+            <tabs>
+                <pane heading="Usecases">
+                    <div ng-controller="TreeCtrl">
+                        <div class="controls">
+                            <button id="newPackage" ng-click="newPackage()" ng-disabled="null!=selectedNode && !isPackage(selectedNode)" class="btn"
+                                    tooltip="New package" tooltip-placement="bottom">
+                                <i class="icon-folder-close"></i>
+                            </button>
+                            <button id="newUsecase" ng-click="newUsecase()" ng-disabled="!isPackage(selectedNode)" class="btn" tooltip="New usecase"
+                                    tooltip-placement="bottom">
+                                <i class="icon-eye-open"></i>
+                            </button>
+                        </div>
+                        <ul id="treeRoot">
+                            <li ng-repeat="child in child.getChildren()">
+                                <!--suppress HtmlUnknownTag -->
+                                <treenode></treenode>
+                            </li>
+                        </ul>
+                        <div>selectedNode:<span id="selectedNode">{{selectedNode.name}}</span></div>
+                        <div class="selectedNode">selectedNode JSON:{{selectedNode}}</div>
+                        <div>events:{{getEvents()}}</div>
+                        <div ng-repeat="event in getEvents()">{{event}} listeners: {{getListenersCount(event)}}</div>
+                    </div>
+                </pane>
+                <pane heading="Tests">
+                    Here we should have list of tests
+                </pane>
+            </tabs>
         </td>
     </tr>
     </tbody>
@@ -54,5 +73,13 @@
 <script src="libs/angular-ui-bootstrap.js"></script>
 <script src="js/tree.js"></script>
 <script src="libs/jquery.keytips.js"></script>
+<script type="text/javascript">
+    jQuery(function ()
+    {
+        var center = jQuery("#center");
+        var text = center.find(".tab-pane").text();
+        center.find(".tab-pane").empty().append((new Showdown.converter()).makeHtml(text));
+    })
+</script>
 </body>
 </html>
