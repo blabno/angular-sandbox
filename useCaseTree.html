@@ -4,17 +4,16 @@
     <title></title>
     <link href="css/bootstrap-combined.min.css" rel="stylesheet"/>
     <link href="css/jquery.keytips.css" rel="stylesheet"/>
+    <link href="css/jquery.layout-default.css" rel="stylesheet"/>
     <link href="css/style.css" rel="stylesheet"/>
     <script src="libs/jquery.js"></script>
     <script src="libs/jquery.resize.js"></script>
 </head>
 <body ng-app="ITC">
-<table class="workspace" ng-controller="WorkspaceCtrl">
-    <tbody>
-    <tr>
-        <td id="center">
-            <tabs>
-                <pane heading="Welcome">
+<div id="workspace" ng-controller="WorkspaceCtrl">
+    <div class="pane ui-layout-center">
+        <tabs>
+            <pane heading="Welcome">
 <!--This text should not be indented-->
 #Welcome
 With this tool you can add usecases and organize them in packages.
@@ -26,59 +25,65 @@ Double click usecase node on the tree to open a new details tab.
 If you want to edit the usecase click edit button or double click on usecase headline or summary.
 
 For faster navigation you can use keyboard shortcuts (simply hit ALT or ALT+SHIFT to see available shortcuts).
-                </pane>
-                <pane ng-repeat="pane in panes" heading="{{pane.title}}" active="pane.active" icon="{{pane.icon}}">
-                    <ng-include src="src(pane)"></ng-include>
-                </pane>
-            </tabs>
-        </td>
-        <td></td>
-        <td>
-            <tabs>
-                <pane heading="Usecases">
-                    <div ng-controller="TreeCtrl">
-                        <div class="controls">
-                            <button id="newPackage" ng-click="newPackage()" ng-disabled="null!=selectedNode && !isPackage(selectedNode)" class="btn"
-                                    tooltip="New package" tooltip-placement="bottom">
-                                <i class="icon-folder-close"></i>
-                            </button>
-                            <button id="newUsecase" ng-click="newUsecase()" ng-disabled="!isPackage(selectedNode)" class="btn" tooltip="New usecase"
-                                    tooltip-placement="bottom">
-                                <i class="icon-eye-open"></i>
-                            </button>
-                        </div>
-                        <ul id="treeRoot">
-                            <li ng-repeat="child in child.getChildren()">
-                                <!--suppress HtmlUnknownTag -->
-                                <treenode></treenode>
-                            </li>
-                        </ul>
-                        <div>selectedNode:<span id="selectedNode">{{selectedNode.name}}</span></div>
-                        <div class="selectedNode">selectedNode JSON:{{selectedNode}}</div>
-                        <div>events:{{getEvents()}}</div>
-                        <div ng-repeat="event in getEvents()">{{event}} listeners: {{getListenersCount(event)}}</div>
+            </pane>
+            <pane ng-repeat="pane in panes" heading="{{pane.title}}" active="pane.active" icon="{{pane.icon}}">
+                <ng-include src="src(pane)"></ng-include>
+            </pane>
+        </tabs>
+
+    </div>
+    <!--<div class="pane ui-layout-north">North</div>-->
+    <div class="pane ui-layout-south">
+        Place for Changes, Tests or some other cool things
+    </div>
+    <!--<div class="pane ui-layout-west">West</div>-->
+    <div class="pane ui-layout-east">
+        <tabs>
+            <pane heading="Usecases">
+                <div ng-controller="TreeCtrl">
+                    <div class="controls">
+                        <button id="newPackage" ng-click="newPackage()" ng-disabled="null!=selectedNode && !isPackage(selectedNode)" class="btn"
+                                tooltip="New package" tooltip-placement="bottom">
+                            <i class="icon-folder-close"></i>
+                        </button>
+                        <button id="newUsecase" ng-click="newUsecase()" ng-disabled="!isPackage(selectedNode)" class="btn" tooltip="New usecase"
+                                tooltip-placement="bottom">
+                            <i class="icon-eye-open"></i>
+                        </button>
                     </div>
-                </pane>
-                <pane heading="Tests">
-                    Here we should have list of tests
-                </pane>
-            </tabs>
-        </td>
-    </tr>
-    </tbody>
-</table>
+                    <ul id="treeRoot">
+                        <li ng-repeat="child in child.getChildren()">
+                            <!--suppress HtmlUnknownTag -->
+                            <treenode></treenode>
+                        </li>
+                    </ul>
+                    <div>selectedNode:<span id="selectedNode">{{selectedNode.name}}</span></div>
+                    <div class="selectedNode">selectedNode JSON:{{selectedNode}}</div>
+                    <div>events:{{getEvents()}}</div>
+                    <div ng-repeat="event in getEvents()">{{event}} listeners: {{getListenersCount(event)}}</div>
+                </div>
+            </pane>
+            <pane heading="Tests">
+                Here we should have list of tests
+            </pane>
+        </tabs>
+    </div>
+</div>
 <script src="libs/showdown.js"></script>
 <script src="libs/angular.js"></script>
 <script src="libs/angular-resource.js"></script>
 <script src="libs/angular-ui-bootstrap.js"></script>
 <script src="js/tree.js"></script>
+<script src="libs/jquery-ui.js"></script>
+<script src="libs/jquery.layout.js"></script>
 <script src="libs/jquery.keytips.js"></script>
 <script type="text/javascript">
     jQuery(function ()
     {
-        var center = jQuery("#center");
+        var center = jQuery(".ui-layout-center");
         var text = center.find(".tab-pane").text();
         center.find(".tab-pane").empty().append((new Showdown.converter()).makeHtml(text));
+        jQuery('#workspace').layout({east: {size: 520}});
     })
 </script>
 </body>

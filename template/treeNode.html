@@ -1,6 +1,7 @@
 <div ng-controller="NodeCtrl" class="treenode" ng-class="{'selected':isSelected(child)}">
     <div class="head">
-        <span ng-click="select(child)" ng-dblclick="toggle()" class="toggle" tooltip="Click to select, Double-click to toggle or open" tooltip-placement="left">
+        <span ng-click="select(child)" ng-dblclick="toggle()" class="toggle" tooltip="Click to select, Double-click to toggle or open"
+              tooltip-placement="right">
             <!--suppress HtmlPresentationalElement -->
             <i ng-class="{'icon-folder-close':isPackage(child) && !isOpen(),'icon-folder-open':isPackage(child) && isOpen(),'disabled':isPackage(child) && !child.hasChildren, 'icon-eye-open':isUseCase(child)}"></i>
             <span class="name">{{child.name}}</span>
