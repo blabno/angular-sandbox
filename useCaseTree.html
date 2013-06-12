@@ -38,8 +38,8 @@ For faster navigation you can use keyboard shortcuts (simply hit ALT or ALT+SHIF
     </div>
     <!--<div class="pane ui-layout-west">West</div>-->
     <div class="pane ui-layout-east">
-        <tabs>
-            <pane heading="Usecases">
+        <!--<tabs>-->
+            <!--<pane heading="Usecases">-->
                 <div ng-controller="TreeCtrl">
                     <div class="controls">
                         <button id="newPackage" ng-click="newPackage()" ng-disabled="null!=selectedNode && !isPackage(selectedNode)" class="btn"
@@ -62,11 +62,11 @@ For faster navigation you can use keyboard shortcuts (simply hit ALT or ALT+SHIF
                     <div>events:{{getEvents()}}</div>
                     <div ng-repeat="event in getEvents()">{{event}} listeners: {{getListenersCount(event)}}</div>
                 </div>
-            </pane>
-            <pane heading="Tests">
-                Here we should have list of tests
-            </pane>
-        </tabs>
+            <!--</pane>-->
+            <!--<pane heading="Tests">-->
+                <!--Here we should have list of tests-->
+            <!--</pane>-->
+        <!--</tabs>-->
     </div>
 </div>
 <script src="libs/showdown.js"></script>
