@@ -12,7 +12,8 @@
     <div ng-bind-html-unsafe="getSummaryPreview()" class="summary" ng-dblclick="edit()"></div>
     <div class="editor" keep-in-view=".tab-content" ng-model="usecase.summary" ng-show="isEditMode()">
         <div class="controls">
-            <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank" class="icon-question-sign" tooltip="syntax" tooltip-placement="left"></a>
+            <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank" class="icon-question-sign" tooltip="syntax"
+               tooltip-placement="left"></a>
         </div>
         <!--suppress HtmlFormInputWithoutLabel -->
         <textarea ng-model="usecase.summary" class="summary" ng-disabled="!pane.ready"></textarea>

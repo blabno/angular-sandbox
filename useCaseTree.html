@@ -23,11 +23,12 @@
         <td>
             <div ng-controller="TreeCtrl">
                 <div class="controls">
-                    <button id="newPackage" ng-click="newPackage()" ng-disabled="null!=selectedNode && !isPackage(selectedNode)" class="btn" tooltip="New package"
-                            tooltip-placement="bottom">
+                    <button id="newPackage" ng-click="newPackage()" ng-disabled="null!=selectedNode && !isPackage(selectedNode)" class="btn"
+                            tooltip="New package" tooltip-placement="bottom">
                         <i class="icon-folder-close"></i>
                     </button>
-                    <button id="newUsecase" ng-click="newUsecase()" ng-disabled="!isPackage(selectedNode)" class="btn" tooltip="New usecase" tooltip-placement="bottom">
+                    <button id="newUsecase" ng-click="newUsecase()" ng-disabled="!isPackage(selectedNode)" class="btn" tooltip="New usecase"
+                            tooltip-placement="bottom">
                         <i class="icon-eye-open"></i>
                     </button>
                 </div>

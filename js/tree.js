@@ -14,11 +14,11 @@ itc.factory("Panes", function (PackageDAO, UsecaseDAO, ApplicationEventBus)
         }
     });
     return  {
-        getOpenPanes:function ()
+        getOpenPanes: function ()
         {
             return panes;
         },
-        openUsecase:function (usecaseId)
+        openUsecase: function (usecaseId)
         {
             var i;
             for (i = 0; i < panes.length; i++) {
@@ -30,7 +30,7 @@ itc.factory("Panes", function (PackageDAO, UsecaseDAO, ApplicationEventBus)
                     return;
                 }
             }
-            var pane = {usecaseId:usecaseId, title:"Loading usecase #" + usecaseId, type:"usecase", icon:"icon-eye-open", active:true, ready:false};
+            var pane = {usecaseId: usecaseId, title: "Loading usecase #" + usecaseId, type: "usecase", icon: "icon-eye-open", active: true, ready: false};
             panes.push(pane);
             var usecase = UsecaseDAO.getUsecase(usecaseId, function (usecase)
             {
@@ -39,7 +39,7 @@ itc.factory("Panes", function (PackageDAO, UsecaseDAO, ApplicationEventBus)
                 pane.ready = true;
             });
         },
-        close:function (pane)
+        close: function (pane)
         {
             var index = panes.indexOf(pane);
             panes.splice(index, 1);
@@ -54,10 +54,10 @@ itc.factory("ApplicationEventBus", function ()
 {
     var listeners = {};
     return {
-        PACKAGE_CHILDREN_MODIFIED:"PackageChildrenModified",
-        USECASE_REMOVED:"UsecaseRemoved",
-        PACKAGE_REMOVED:"PackageRemoved",
-        getEvents:function ()
+        PACKAGE_CHILDREN_MODIFIED: "PackageChildrenModified",
+        USECASE_REMOVED: "UsecaseRemoved",
+        PACKAGE_REMOVED: "PackageRemoved",
+        getEvents: function ()
         {
             var list = [];
             for (var event in listeners) {
@@ -68,11 +68,11 @@ itc.factory("ApplicationEventBus", function ()
             }
             return list;
         },
-        getListenersCount:function (event)
+        getListenersCount: function (event)
         {
             return listeners[event].length;
         },
-        subscribe:function (eventName, listener)
+        subscribe: function (eventName, listener)
         {
             console.debug("subscribing to event: " + eventName);
             if (undefined == listeners[eventName]) {
@@ -80,7 +80,7 @@ itc.factory("ApplicationEventBus", function ()
             }
             listeners[eventName].push(listener);
         },
-        unsubscribe:function (listener)
+        unsubscribe: function (listener)
         {
             for (var event in listeners) {
                 if (!listeners.hasOwnProperty(event)) {
@@ -100,7 +100,7 @@ itc.factory("ApplicationEventBus", function ()
          *
          * @param event event to publish
          */
-        broadcast:function (event)
+        broadcast: function (event)
         {
             var thisEventListeners = listeners[event.type];
             if (undefined != thisEventListeners) {
@@ -116,19 +116,19 @@ itc.factory("ApplicationEventBus", function ()
 });
 itc.factory("PackageDAO", function ($resource)
 {
-    var PackageREST = $resource("/api/package/:id/:controller", {id:"@id"},
-            {'query':{method:'GET', isArray:true}, 'contents':{method:'GET', isArray:true, params:{controller:"contents"}}});
+    var PackageREST = $resource("/api/package/:id/:controller", {id: "@id"},
+            {'query': {method: 'GET', isArray: true}, 'contents': {method: 'GET', isArray: true, params: {controller: "contents"}}});
     return {
-        list:function (parentId, callback)
+        list: function (parentId, callback)
         {
             if (undefined == parentId) {
                 PackageREST.query(callback);
             } else {
-                PackageREST.contents({id:parentId}, callback);
+                PackageREST.contents({id: parentId}, callback);
             }
 
         },
-        persistPackage:function (pkg, callback)
+        persistPackage: function (pkg, callback)
         {
             var restPkg = new PackageREST(pkg);
             restPkg.$save(function (result)
@@ -139,13 +139,13 @@ itc.factory("PackageDAO", function ($resource)
                 }
             });
         },
-        getPackage:function (packageId, success, error)
+        getPackage: function (packageId, success, error)
         {
-            PackageREST.get({id:packageId}, success, error);
+            PackageREST.get({id: packageId}, success, error);
         },
-        removePackage:function (packageId, callback)
+        removePackage: function (packageId, callback)
         {
-            var restPkg = new PackageREST({id:packageId});
+            var restPkg = new PackageREST({id: packageId});
             restPkg.$delete(function ()
             {
                 if (callback instanceof Function) {
@@ -157,9 +157,9 @@ itc.factory("PackageDAO", function ($resource)
 });
 itc.factory("UsecaseDAO", function ($resource)
 {
-    var UsecaseREST = $resource("/api/usecase/:id", {id:"@id"});
+    var UsecaseREST = $resource("/api/usecase/:id", {id: "@id"});
     return {
-        persistUsecase:function (usecase, callback)
+        persistUsecase: function (usecase, callback)
         {
             var restUsecase = new UsecaseREST(usecase);
             restUsecase.$save(function (result)
@@ -170,13 +170,13 @@ itc.factory("UsecaseDAO", function ($resource)
                 }
             });
         },
-        getUsecase:function (usecaseId, success, error)
+        getUsecase: function (usecaseId, success, error)
         {
-            UsecaseREST.get({id:usecaseId}, success, error);
+            UsecaseREST.get({id: usecaseId}, success, error);
         },
-        removeUsecase:function (usecaseId, callback)
+        removeUsecase: function (usecaseId, callback)
         {
-            var restUsecase = new UsecaseREST({id:usecaseId});
+            var restUsecase = new UsecaseREST({id: usecaseId});
             restUsecase.$delete(function ()
             {
                 if (callback instanceof Function) {
@@ -236,26 +236,26 @@ itc.factory("nodeFactory", function (PackageDAO, UsecaseDAO, ApplicationEventBus
         };
 
         var node = {
-            type:pkg.type, id:pkg.id, parentId:pkg.parentId, name:pkg.name, getChildren:function ()
+            type: pkg.type, id: pkg.id, parentId: pkg.parentId, name: pkg.name, getChildren: function ()
             {
                 if (!this.open && undefined != this.id) {
                     return [];
                 }
                 initChildren(this);
                 return this.children;
-            }, hasChildren:pkg.hasChildren, open:false, addChild:function (child)
+            }, hasChildren: pkg.hasChildren, open: false, addChild: function (child)
             {
                 initChildren(this);
                 this.children.push(child);
                 this.hasChildren = true;
                 this.open = true;
-                ApplicationEventBus.broadcast({source:this, type:ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id:this.id});
+                ApplicationEventBus.broadcast({source: this, type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: this.id});
             },
-            isChildrenInitialized:function ()
+            isChildrenInitialized: function ()
             {
                 return undefined != this.children;
             },
-            removeChild:function (child)
+            removeChild: function (child)
             {
                 child.__destroy();
                 initChildren(this);
@@ -266,18 +266,18 @@ itc.factory("nodeFactory", function (PackageDAO, UsecaseDAO, ApplicationEventBus
                 if (NODE_TYPE_USECASE == child.type) {
                     UsecaseDAO.removeUsecase(child.id, function (usecaseId)
                     {
-                        ApplicationEventBus.broadcast({source:node, type:ApplicationEventBus.USECASE_REMOVED, id:usecaseId});
-                        ApplicationEventBus.broadcast({source:node, type:ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id:node.id});
+                        ApplicationEventBus.broadcast({source: node, type: ApplicationEventBus.USECASE_REMOVED, id: usecaseId});
+                        ApplicationEventBus.broadcast({source: node, type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: node.id});
 
                     });
                 } else {
                     PackageDAO.removePackage(child.id, function (packageId)
                     {
-                        ApplicationEventBus.broadcast({source:node, type:ApplicationEventBus.PACKAGE_REMOVED, id:packageId});
+                        ApplicationEventBus.broadcast({source: node, type: ApplicationEventBus.PACKAGE_REMOVED, id: packageId});
                     });
                 }
             },
-            refresh:function ()
+            refresh: function ()
             {
                 if (NODE_TYPE_USECASE == this.type) {
                     UsecaseDAO.getUsecase(this.id, function (result)
@@ -286,7 +286,7 @@ itc.factory("nodeFactory", function (PackageDAO, UsecaseDAO, ApplicationEventBus
                     }, function (response)
                     {
                         if (404 == response.status) {
-                            ApplicationEventBus.broadcast({source:node, type:ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id:node.parentId});
+                            ApplicationEventBus.broadcast({source: node, type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: node.parentId});
                             alert("Usecase " + node.id + " has been removed");
                         } else {
                             var stringifiedResponse;
@@ -308,7 +308,7 @@ itc.factory("nodeFactory", function (PackageDAO, UsecaseDAO, ApplicationEventBus
                     }, function (response)
                     {
                         if (404 == response.status) {
-                            ApplicationEventBus.broadcast({source:node, type:ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id:node.parentId});
+                            ApplicationEventBus.broadcast({source: node, type: ApplicationEventBus.PACKAGE_CHILDREN_MODIFIED, id: node.parentId});
                             alert("Package " + node.id + " has been removed");
                         } else {
                             var stringifiedResponse;
@@ -324,7 +324,7 @@ itc.factory("nodeFactory", function (PackageDAO, UsecaseDAO, ApplicationEventBus
                     throw new Error("Refresh: Unsupported node type: " + this.type);
                 }
             },
-            __destroy:function ()
+            __destroy: function ()
             {
                 ApplicationEventBus.unsubscribe(packageChildrenModifiedHandler);
                 if (undefined != this.children) {
@@ -338,7 +338,7 @@ itc.factory("nodeFactory", function (PackageDAO, UsecaseDAO, ApplicationEventBus
         return  node;
     };
     return {
-        create:create
+        create: create
     }
 });
 
@@ -368,7 +368,8 @@ itc.controller("UsecaseCtrl", function ($scope, UsecaseDAO)
     $scope.edit = function ()
     {
         editMode = true;
-    }
+    };
+
     $scope.getSummaryPreview = function ()
     {
         return this.usecase ? markdownConverver.makeHtml(this.usecase.summary || "") : "Loading...";
@@ -400,7 +401,7 @@ itc.controller("UsecaseCtrl", function ($scope, UsecaseDAO)
 });
 itc.controller("TreeCtrl", function ($scope, PackageDAO, UsecaseDAO, ApplicationEventBus, nodeFactory)
 {
-    $scope.child = nodeFactory.create({id:null, name:"Root", hasChildren:true, type:NODE_TYPE_PACKAGE});
+    $scope.child = nodeFactory.create({id: null, name: "Root", hasChildren: true, type: NODE_TYPE_PACKAGE});
     $scope.child.open = true;
 
     $scope.selectedNode = null;
@@ -433,7 +434,7 @@ itc.controller("TreeCtrl", function ($scope, PackageDAO, UsecaseDAO, Application
         var name = prompt("Package name");
         if (null != name && name.trim().length > 0) {
             var parentNode = (null == $scope.selectedNode) ? $scope.child : $scope.selectedNode;
-            var pkg = {name:name, hasChildren:false, parentId:parentNode.id, type:NODE_TYPE_PACKAGE};
+            var pkg = {name: name, hasChildren: false, parentId: parentNode.id, type: NODE_TYPE_PACKAGE};
             PackageDAO.persistPackage(pkg, function (pkg)
             {
                 if (parentNode.isChildrenInitialized()) {
@@ -455,7 +456,7 @@ itc.controller("TreeCtrl", function ($scope, PackageDAO, UsecaseDAO, Application
         var name = prompt("Usecase name");
         if (null != name && name.trim().length > 0) {
             var parentNode = (null == $scope.selectedNode) ? $scope.child : $scope.selectedNode;
-            var usecase = {name:name, hasChildren:false, parentId:parentNode.id, type:NODE_TYPE_USECASE};
+            var usecase = {name: name, hasChildren: false, parentId: parentNode.id, type: NODE_TYPE_USECASE};
             UsecaseDAO.persistUsecase(usecase, function ()
             {
                 if (parentNode.isChildrenInitialized()) {
@@ -547,17 +548,17 @@ itc.controller("NodeCtrl", function ($scope)
 itc.directive("treenode", function ($compile)
 {
     return {
-        restrict:'E',
-        transclude:false,
-        scope:false,
-        templateUrl:'template/treeNode.html',
-        link:function (scope, elm)
+        restrict: 'E',
+        transclude: false,
+        scope: false,
+        templateUrl: 'template/treeNode.html',
+        link: function (scope, elm)
         {
             var childTemplate = '<li ng-repeat="child in getChildren()"><treenode></treenode></li>';
             var children = $compile(childTemplate)(scope);
             elm.find("ul").append(children);
         },
-        replace:true
+        replace: true
     }
 });
 
@@ -588,9 +589,9 @@ itc.controller("WorkspaceCtrl", function ($scope, Panes)
 itc.directive("keepInView", function ()
 {
     return {
-        restrict:'A',
-        scope:false,
-        link:function (scope, element, attrs)
+        restrict: 'A',
+        scope: false,
+        link: function (scope, element, attrs)
         {
             var $window = jQuery(window);
 
@@ -604,19 +605,19 @@ itc.directive("keepInView", function ()
                 var elementOuterHeight = element.outerHeight();
                 if (parent.offset().top + parent.innerHeight() + $window.scrollTop() <= $window.innerHeight()) {
                     element.css({
-                        position:'static',
-                        width:'100%'
+                        position: 'static',
+                        width: '100%'
                     });
-                    element.children().css({width:'100%'});
-                    parent.css({paddingBottom:0});
+                    element.children().css({width: '100%'});
+                    parent.css({paddingBottom: 0});
                 } else {
                     element.css({
-                        position:'fixed',
-                        bottom:0,
-                        width:parent.innerWidth()
+                        position: 'fixed',
+                        bottom: 0,
+                        width: parent.innerWidth()
                     });
-                    element.children().css({width:parent.innerWidth()});
-                    parent.css({paddingBottom:elementOuterHeight + "px"});
+                    element.children().css({width: parent.innerWidth()});
+                    parent.css({paddingBottom: elementOuterHeight + "px"});
                 }
             }
 
