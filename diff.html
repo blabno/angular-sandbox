@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Angular.js diff</title>
+    <link href="css/diffview.css" rel="stylesheet"/>
+    <script src="libs/jquery.js"></script>
+    <script src="libs/angular.js"></script>
+    <script src="libs/diffview.js"></script>
+</head>
+<body class="default">
+<div id="old">
+    #Head
+
+    Param 1 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam lectus tellus, scelerisque et urna ac, interdum ornare turpis. Suspendisse potenti.
+    Aenean facilisis metus a lacus aliquet, sit amet fermentum lectus varius. Ut ac tortor et ligula congue fermentum. Duis placerat, erat bibendum sagittis
+    ultricies, tellus metus egestas lectus, ut sagittis ante ipsum in magna. Sed tincidunt eget felis vitae rutrum. Nulla et lacinia lacus. Fusce lacinia,
+    mauris quis venenatis ultricies, augue tortor semper quam, in pulvinar est lacus eu ante.
+
+    Praesent sagittis mi a sapien dapibus, et elementum mauris dignissim. In in sem sem. Vestibulum pulvinar magna nisl, id placerat dolor venenatis at. Integer
+    non odio quis nisl rutrum scelerisque. In aliquam leo ac luctus tincidunt. Vivamus et ultrices tellus. Curabitur et mattis felis. Quisque sagittis quis
+    turpis eget fringilla. Donec eros dui, molestie vel magna id, tincidunt sodales mi. Donec euismod nec magna ac dignissim. Donec auctor fermentum lorem.
+
+    ```
+    Code
+    ```
+</div>
+<div id="new">
+    #Heading
+
+    Paragraph I
+
+    ```
+    Code
+    ```
+</div>
+
+<div id="diff"></div>
+<script>
+    jQuery(function ()
+    {
+        var baseTextLines = jQuery("#old").text();
+        var newTextLines = jQuery("#new").text();
+        jQuery("#diff").append(diffview({baseTextLines: baseTextLines, newTextLines: newTextLines, inline: false})[0]);
+    });
+</script>
+</body>
+</html>
