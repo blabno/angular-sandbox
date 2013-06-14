@@ -430,7 +430,7 @@ var diffview = function diffview(args) {
         //after the opcodes generate the other two core pieces of logic
         //are quaranteened into an anonymous function.
         return (function diffview__report() {
-            var node = ["<div class='diff'>"],
+            var node = ["<table class='diff'>"],
                 data = [
                     [], [], [], []
                 ],
@@ -1092,18 +1092,18 @@ var diffview = function diffview(args) {
                     ];
                 };
             if (inline === true) {
-                node.push("<h3 class='texttitle'>");
+                node.push("<div class='diff-title'>");
                 node.push(baseTextName);
                 node.push(" vs. ");
                 node.push(newTextName);
-                node.push("</h3><ol class='count'>");
+                node.push("</div>");
             } else {
-                data[0].push("<div class='diff-left'><h3 class='texttitle'>");
+                data[0].push("<tr><td class='diff-left'><div><div class='diff-title'>");
                 data[0].push(baseTextName);
-                data[0].push("</h3><ol class='count'>");
-                data[2].push("<div class='diff-right'><h3 class='texttitle'>");
-                data[2].push(newTextName);
-                data[2].push("</h3><ol class='count' onmousedown='pd.colSliderGrab(this);' style='cursor:w-resize'>");
+                data[0].push("</div><table>");
+                data[1].push("<td class='diff-right'><div><div class='diff-title'>");
+                data[1].push(newTextName);
+                data[1].push("</div><table>")
             }
             for (idx = 0; idx < opleng; idx += 1) {
                 code = opcodes[idx];
@@ -1120,12 +1120,12 @@ var diffview = function diffview(args) {
                         ctest = false;
                         jump = rowcnt - ((idx === 0 ? 1 : 2) * context);
                         if (jump > 1) {
-                            data[0].push("<li>...</li>");
+                            data[0].push("<td>...</td>");
                             if (inline === false) {
-                                data[1].push("<li class='skip'>&#10;</li>");
+                                data[0].push("<td class='skip'>&#10;</td>");
                             }
-                            data[2].push("<li>...</li>");
-                            data[3].push("<li class='skip'>&#10;</li>");
+                            data[1].push("<td>...</td>");
+                            data[1].push("<td class='skip'>&#10;</td>");
                             b += jump;
                             n += jump;
                             i += jump - 1;
@@ -1156,22 +1156,26 @@ var diffview = function diffview(args) {
                     //this is the final of the three primary components
                     //this is where the output is built
                     if (inline === true) {
+                        data[0].push("<tr>");
                         if (ntest || change === "insert") {
-                            data[0].push("<li class='empty'>&#8203;&#10;</li>");
-                            data[2].push("<li>");
-                            data[2].push(n + 1);
-                            data[2].push("&#10;</li>");
-                            data[3].push("<li class='insert'>");
-                            data[3].push(nta[n]);
-                            data[3].push("&#10;</li>");
+                            data[0].push("<td class='empty'>&#8203;&#10;</td>");
+                            data[0].push("<td>");
+                            data[0].push(n + 1);
+                            data[0].push("&#10;</td>");
+                            data[0].push("<td class='insert'>");
+                            data[0].push(nta[n]);
+                            data[0].push("&#10;</td>");
                         } else if (btest || change === "delete") {
-                            data[0].push("<li>");
+                            data[0].push("<td>");
                             data[0].push(b + 1);
-                            data[0].push("</li>");
-                            data[2].push("<li class='empty'>&#8203;&#10;</li>");
-                            data[3].push("<li class='delete'>");
-                            data[3].push(bta[b]);
-                            data[3].push("&#10;</li>");
+                            data[0].push("</td>");
+                            data[0].push("<td class='empty'>&#8203;&#10;</td>");
+                            data[0].push("<td class='delete'>");
+                            data[0].push(bta[b]);
+                            data[0].push("&#10;</td>");
+                            data[0].push("<td class='delete'>");
+                            data[0].push(bta[b]);
+                            data[0].push("&#10;</td>");
                         } else if (change === "replace") {
                             if (bta[b] !== nta[n]) {
                                 if (bta[b] === "") {
@@ -1187,43 +1191,44 @@ var diffview = function diffview(args) {
                                 }
                             }
                             if (b < be) {
-                                data[0].push("<li>");
+                                data[0].push("<td>");
                                 data[0].push(b + 1);
-                                data[0].push("</li>");
-                                data[2].push("<li class='empty'>&#8203;&#10;</li>");
-                                data[3].push("<li class='delete'>");
+                                data[0].push("</td>");
+                                data[0].push("<td class='empty'>&#8203;&#10;</td>");
+                                data[0].push("<td class='delete'>");
                                 if (n < ne) {
-                                    data[3].push(z[0]);
+                                    data[0].push(z[0]);
                                 } else {
-                                    data[3].push(bta[b]);
+                                    data[0].push(bta[b]);
                                 }
-                                data[3].push("&#10;</li>");
+                                data[0].push("&#10;</td>");
                             }
                             if (n < ne) {
-                                data[0].push("<li class='empty'>&#8203;&#10;</li>");
-                                data[2].push("<li>");
-                                data[2].push(n + 1);
-                                data[2].push("</li>");
-                                data[3].push("<li class='insert'>");
+                                data[0].push("</tr><tr>")
+                                data[0].push("<td class='empty'>&#8203;&#10;</td>");
+                                data[0].push("<td>");
+                                data[0].push(n + 1);
+                                data[0].push("</td>");
+                                data[0].push("<td class='insert'>");
                                 if (b < be) {
-                                    data[3].push(z[1]);
+                                    data[0].push(z[1]);
                                 } else {
-                                    data[3].push(nta[n]);
+                                    data[0].push(nta[n]);
                                 }
-                                data[3].push("&#10;</li>");
+                                data[0].push("&#10;</td>");
                             }
                         } else if (b < be || n < ne) {
-                            data[0].push("<li>");
+                            data[0].push("<td>");
                             data[0].push(b + 1);
-                            data[0].push("</li>");
-                            data[2].push("<li>");
-                            data[2].push(n + 1);
-                            data[2].push("</li>");
-                            data[3].push("<li class='");
-                            data[3].push(change);
-                            data[3].push("'>");
-                            data[3].push(bta[b]);
-                            data[3].push("&#10;</li>");
+                            data[0].push("</td>");
+                            data[0].push("<td>");
+                            data[0].push(n + 1);
+                            data[0].push("</td>");
+                            data[0].push("<td class='");
+                            data[0].push(change);
+                            data[0].push("'>");
+                            data[0].push(bta[b]);
+                            data[0].push("&#10;</td>");
                         }
                         if (btest) {
                             b += 1;
@@ -1235,7 +1240,10 @@ var diffview = function diffview(args) {
                             b += 1;
                             n += 1;
                         }
+                        data[0].push("</tr>");
                     } else {
+                        data[0].push("<tr>");
+                        data[1].push("<tr>");
                         if (!btest && !ntest && typeof bta[b] === "string" && typeof nta[n] === "string") {
                             if (bta[b] === "" && nta[n] !== "") {
                                 change = "insert";
@@ -1250,55 +1258,55 @@ var diffview = function diffview(args) {
                             }
                             if (b < be) {
                                 if (bta[b] === "") {
-                                    data[0].push("<li class='empty'>&#10;");
+                                    data[0].push("<td class='empty'>&#10;");
                                 } else {
-                                    data[0].push("<li>" + (b + 1));
+                                    data[0].push("<td>" + (b + 1));
                                 }
-                                data[0].push("</li>");
-                                data[1].push("<li class='");
+                                data[0].push("</td>");
+                                data[0].push("<td class='");
                                 if (n >= ne) {
-                                    data[1].push("delete");
+                                    data[0].push("delete");
                                 } else if (bta[b] === "" && nta[n] !== "") {
+                                    data[0].push("empty");
+                                } else {
+                                    data[0].push(change);
+                                }
+                                data[0].push("'>");
+                                if (z.length === 2) {
+                                    data[0].push(z[0]);
+                                } else {
+                                    data[0].push(bta[b]);
+                                }
+                                data[0].push("&#10;</td>");
+                            } else if (ctest) {
+                                data[0].push("<td class='empty'>&#8203;&#10;</td>");
+                                data[0].push("<td class='empty'>&#8203;</td>");
+                            }
+                            if (n < ne) {
+                                if (nta[n] === "") {
+                                    data[1].push("<td class='empty'>&#10;");
+                                } else {
+                                    data[1].push("<td>" + (n + 1));
+                                }
+                                data[1].push("</td>");
+                                data[1].push("<td class='");
+                                if (b >= be) {
+                                    data[1].push("insert");
+                                } else if (nta[n] === "" && bta[b] !== "") {
                                     data[1].push("empty");
                                 } else {
                                     data[1].push(change);
                                 }
                                 data[1].push("'>");
                                 if (z.length === 2) {
-                                    data[1].push(z[0]);
+                                    data[1].push(z[1]);
                                 } else {
-                                    data[1].push(bta[b]);
+                                    data[1].push(nta[n]);
                                 }
-                                data[1].push("&#10;</li>");
+                                data[1].push("&#10;</td>");
                             } else if (ctest) {
-                                data[0].push("<li class='empty'>&#8203;&#10;</li>");
-                                data[1].push("<li class='empty'>&#8203;</li>");
-                            }
-                            if (n < ne) {
-                                if (nta[n] === "") {
-                                    data[2].push("<li class='empty'>&#10;");
-                                } else {
-                                    data[2].push("<li>" + (n + 1));
-                                }
-                                data[2].push("</li>");
-                                data[3].push("<li class='");
-                                if (b >= be) {
-                                    data[3].push("insert");
-                                } else if (nta[n] === "" && bta[b] !== "") {
-                                    data[3].push("empty");
-                                } else {
-                                    data[3].push(change);
-                                }
-                                data[3].push("'>");
-                                if (z.length === 2) {
-                                    data[3].push(z[1]);
-                                } else {
-                                    data[3].push(nta[n]);
-                                }
-                                data[3].push("&#10;</li>");
-                            } else if (ctest) {
-                                data[2].push("<li class='empty'>&#8203;&#10;</li>");
-                                data[3].push("<li class='empty'>&#8203;</li>");
+                                data[1].push("<td class='empty'>&#8203;&#10;</td>");
+                                data[1].push("<td class='empty'>&#8203;</td>");
                             }
                             if (b < be) {
                                 b += 1;
@@ -1307,51 +1315,43 @@ var diffview = function diffview(args) {
                                 n += 1;
                             }
                         } else if (btest || (typeof bta[b] === "string" && typeof nta[n] !== "string")) {
-                            data[0].push("<li>");
+                            data[0].push("<td>");
                             data[0].push(b + 1);
-                            data[0].push("</li>");
-                            data[1].push("<li class='delete'>");
-                            data[1].push(bta[b]);
-                            data[1].push("&#10;</li>");
-                            data[2].push("<li class='empty'>&#8203;&#10;</li>");
-                            data[3].push("<li class='empty'>&#8203;</li>");
+                            data[0].push("</td>");
+                            data[0].push("<td class='delete'>");
+                            data[0].push(bta[b]);
+                            data[0].push("&#10;</td>");
+                            data[1].push("<td class='empty'>&#8203;&#10;</td>");
+                            data[1].push("<td class='empty'>&#8203;</td>");
                             btest = false;
                             b += 1;
                         } else if (ntest || (typeof bta[b] !== "string" && typeof nta[n] === "string")) {
-                            data[0].push("<li class='empty'>&#8203;&#10;</li>");
-                            data[1].push("<li class='empty'>&#8203;</li>");
-                            data[2].push("<li>");
-                            data[2].push(n + 1);
-                            data[2].push("</li>");
-                            data[3].push("<li class='insert'>");
-                            data[3].push(nta[n]);
-                            data[3].push("&#10;</li>");
+                            data[0].push("<td class='empty'>&#8203;&#10;</td>");
+                            data[0].push("<td class='empty'>&#8203;</td>");
+                            data[1].push("<td>");
+                            data[1].push(n + 1);
+                            data[1].push("</td>");
+                            data[1].push("<td class='insert'>");
+                            data[1].push(nta[n]);
+                            data[1].push("&#10;</td>");
                             ntest = false;
                             n += 1;
                         }
+                        data[0].push("</tr>");
+                        data[1].push("</tr>");
                     }
                 }
             }
-            node.push(data[0].join(""));
-            node.push("</ol><ol class=");
+            data[0].push("</table></div></td>");
+            data[1].push("</table></div></td></tr></table>");
             if (inline === true) {
-                node.push("'count'>");
+                node.push(data[0].join(""));
             } else {
-                node.push("'data'>");
+                node.push(data[0].join(""));
                 node.push(data[1].join(""));
-                node.push("</ol></div>");
             }
-            node.push(data[2].join(""));
-            node.push("</ol><ol class='data'>");
-            node.push(data[3].join(""));
-            if (inline === true) {
-                node.push("</ol>");
-            } else {
-                node.push("</ol></div>");
-            }
-            node.push("<p class='author'>Diff view written by <a href='http://prettydiff.com/'>Pretty Diff</a>.</p></div>");
             return [
-                node.join("").replace(/li class='equal'><\/li/g, "li class='equal'>&#10;</li").replace(/\$#gt;/g, "&gt;").replace(/\$#lt;/g, "&lt;").replace(/\%#lt;/g, "$#lt;").replace(/\%#gt;/g, "$#gt;"), errorout, diffline
+                node.join("").replace(/td class='equal'><\/td/g, "td class='equal'>&#10;</td").replace(/\$#gt;/g, "&gt;").replace(/\$#lt;/g, "&lt;").replace(/\%#lt;/g, "$#lt;").replace(/\%#gt;/g, "$#gt;"), errorout, diffline
             ];
         }());
     };

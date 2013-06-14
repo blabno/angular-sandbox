@@ -6,9 +6,26 @@
     <script src="libs/jquery.js"></script>
     <script src="libs/angular.js"></script>
     <script src="libs/diffview.js"></script>
+    <style type="text/css">
+        #old, #new {
+            width: 800px;
+            height: 400px;
+            float: left;
+        }
+
+        body {
+            font-size: 10px;
+        }
+
+        .diff .diff-left > div, .diff .diff-right > div {
+            width: 800px;
+        }
+    </style>
 </head>
-<body class="default">
-<div id="old">
+<body class="white">
+<div id="diffA"></div>
+<div id="diffB"></div>
+<textarea id="old">
     #Head
 
     Param 1 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam lectus tellus, scelerisque et urna ac, interdum ornare turpis. Suspendisse potenti.
@@ -23,25 +40,29 @@
     ```
     Code
     ```
-</div>
-<div id="new">
+</textarea>
+<textarea id="new">
     #Heading
 
     Paragraph I
 
+    Paratido
     ```
     Code
     ```
-</div>
+    New Line
+</textarea>
+<button onclick="doDiff()">Diff</button>
 
-<div id="diff"></div>
 <script>
-    jQuery(function ()
+    function doDiff()
     {
-        var baseTextLines = jQuery("#old").text();
-        var newTextLines = jQuery("#new").text();
-        jQuery("#diff").append(diffview({baseTextLines: baseTextLines, newTextLines: newTextLines, inline: false})[0]);
-    });
+        var baseTextLines = jQuery("#old").val();
+        var newTextLines = jQuery("#new").val();
+        jQuery("#diffA").empty().append(diffview({baseTextLines: baseTextLines, newTextLines: newTextLines, inline: true})[0]);
+        jQuery("#diffB").empty().append(diffview({baseTextLines: baseTextLines, newTextLines: newTextLines, inline: false})[0]);
+    }
+    jQuery(doDiff());
 </script>
 </body>
 </html>
