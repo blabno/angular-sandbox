@@ -619,7 +619,7 @@ itc.directive("keepInView", function ()
         link: function (scope, element, attrs)
         {
             var $window = jQuery(window);
-
+            var container = element.parents(".ui-layout-pane");
             function reattach()
             {
                 //noinspection JSUnresolvedVariable
@@ -628,7 +628,7 @@ itc.directive("keepInView", function ()
                     return;
                 }
                 var elementOuterHeight = element.outerHeight();
-                if (parent.offset().top + parent.innerHeight() + $window.scrollTop() <= $window.innerHeight()) {
+                if (parent.offset().top + parent.innerHeight() + container.scrollTop() <= container.height()) {
                     element.css({
                         position: 'static',
                         width: '100%'
@@ -636,9 +636,10 @@ itc.directive("keepInView", function ()
                     element.children().css({width: '100%'});
                     parent.css({paddingBottom: 0});
                 } else {
+                    var bottom = $window.innerHeight() - container.height();
                     element.css({
                         position: 'fixed',
-                        bottom: 0,
+                        bottom: bottom,
                         width: parent.innerWidth()
                     });
                     element.children().css({width: parent.innerWidth()});
@@ -648,6 +649,7 @@ itc.directive("keepInView", function ()
 
             element.resize(reattach);
             $window.resize(reattach);
+            container.resize(reattach);
             scope.$watch(attrs.ngModel, function ()
             {
                 reattach();
