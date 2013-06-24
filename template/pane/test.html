@@ -1,10 +1,11 @@
-<div class="usecase" ng-controller="UsecaseCtrl" keytips="pane.active,isModified()">
+<div class="test" ng-controller="TestCtrl" keytips="pane.active,isModified()">
     <div class="btns">
         <button class="btn btn-primary" accesskey="s" ng-click="save()" ng-show="isEditMode()" ng-disabled="!isModified()" tooltip="Save"
                 tooltip-placement="bottom">
             <span class="icon-ok icon-white"></span>
         </button>
-        <button class="btn btn-primary" accesskey="e" ng-click="edit()" ng-hide="isEditMode()" ng-disabled="!pane.ready" tooltip="Edit" tooltip-placement="bottom">
+        <button class="btn btn-primary" accesskey="e" ng-click="edit()" ng-hide="isEditMode()" ng-disabled="!pane.ready" tooltip="Edit"
+                tooltip-placement="bottom">
             <span class="icon-edit icon-white"></span>
         </button>
         <button class="btn btn-danger" accesskey="e" ng-click="exitEdit()" ng-show="isEditMode()" tooltip="Exit edit mode" tooltip-placement="bottom">
@@ -14,34 +15,34 @@
             <span class="icon-remove-circle"></span>
         </button>
     </div>
-    <h1 ng-dblclick="edit()" ng-hide="isEditMode()">{{usecase.name}}</h1>
+    <h1 ng-dblclick="edit()" ng-hide="isEditMode()">{{test.name}}</h1>
 
-    <div class="tests" ng-show="!isEditMode()">
-        <h2>Tests
-            <button class="btn" ng-click="newTest()">
-                <span class="icon-plus"></span>
+    <div class="usecases" ng-show="!isEditMode()">
+        <h2>Usecases
+            <button class="btn" ng-click="linkUsecase()" tooltip="Link usecase">
+                <span class="icon-magnet"></span>
             </button>
         </h2>
         <ul>
-            <li ng-repeat="test in usecase.tests">
+            <li ng-repeat="usecase in test.usecases">
                 <!--suppress HtmlUnknownTarget -->
-                <a href="#test={{test.id}}" ng-click="openTest(test)">{{test.name}}</a>
+                <a href="#usecase={{test.id}}" ng-click="openUsecase(test)">{{usecase.id}}. {{usecase.name}}</a>
             </li>
         </ul>
     </div>
 
     <div ng-show="isEditMode()">
-        <label for="name">Usecase name</label>
-        <input type="text" id="name" class="usecase-name" ng-model="usecase.name"/>
+        <label for="name">Test name</label>
+        <input type="text" id="name" class="usecase-name" ng-model="test.name"/>
     </div>
 
     <div ng-bind-html-unsafe="getSummaryPreview()" class="summary" ng-dblclick="edit()"></div>
-    <div class="editor" keep-in-view=".tab-content" ng-model="usecase.summary" ng-show="isEditMode()">
+    <div class="editor" keep-in-view=".tab-content" ng-model="test.summary" ng-show="isEditMode()">
         <div class="controls">
             <a href="http://daringfireball.net/projects/markdown/syntax" target="_blank" class="icon-question-sign" tooltip="syntax"
                tooltip-placement="left"></a>
         </div>
         <!--suppress HtmlFormInputWithoutLabel -->
-        <textarea ng-model="usecase.summary" class="summary" ng-disabled="!pane.ready"></textarea>
+        <textarea ng-model="test.summary" class="summary" ng-disabled="!pane.ready"></textarea>
     </div>
 </div>

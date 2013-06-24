@@ -54,11 +54,11 @@ ul#treeRoot, .treenode > ul {
     opacity: .3;
 }
 
-.usecase {
+.usecase, .test {
     position: relative;
 }
 
-.usecase textarea {
+.usecase textarea, .test textarea {
     height: 150px;
     width: 100%;
     box-sizing: border-box;
@@ -70,18 +70,25 @@ ul#treeRoot, .treenode > ul {
     overflow-y: visible;
 }
 
-.usecase .editor .controls {
+.usecase .editor .controls, .test .editor .controls {
     text-align: right;
 }
 
-.usecase .btns {
+.usecase .btns, .test .btns {
     text-align: right;
     padding-right: 20px;
 }
 
-.usecase .usecase-name {
+.usecase .usecase-name, .test .usecase-name {
     width: 100%;
     box-sizing: border-box;
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
+}
+
+.usecase .tests, .test .usecases {
+    float: right;
+    width: 200px;
+    background-color: #f5f5f5;
+    padding: 0 10px 10px;
 }

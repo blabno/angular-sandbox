@@ -1,7 +1,7 @@
 var itc = angular.module("ITC", ["ui.bootstrap", "ngResource"]);
 var NODE_TYPE_PACKAGE = "package";
 var NODE_TYPE_USECASE = "usecase";
-itc.factory("Panes", function (PackageDAO, UsecaseDAO, ApplicationEventBus)
+itc.factory("Panes", function (PackageDAO, TestDAO, UsecaseDAO, ApplicationEventBus)
 {
     var panes = [];
     ApplicationEventBus.subscribe(ApplicationEventBus.USECASE_REMOVED, function (event)
@@ -17,6 +17,27 @@ itc.factory("Panes", function (PackageDAO, UsecaseDAO, ApplicationEventBus)
         getOpenPanes: function ()
         {
             return panes;
+        },
+        openTest: function (testId)
+        {
+            var i;
+            for (i = 0; i < panes.length; i++) {
+                panes[i].active = false;
+            }
+            for (i = 0; i < panes.length; i++) {
+                if (panes[i].type == "test" && panes[i].testId == testId) {
+                    panes[i].active = true;
+                    return;
+                }
+            }
+            var pane = {testId: testId, title: "Loading test #" + testId, type: "test", icon: "icon-cog", active: true, ready: false};
+            panes.push(pane);
+            var test = TestDAO.getTest(testId, function (test)
+            {
+                pane.title = test.name;
+                pane.data = test;
+                pane.ready = true;
+            });
         },
         openUsecase: function (usecaseId)
         {
@@ -151,6 +172,37 @@ itc.factory("PackageDAO", function ($resource)
             {
                 if (callback instanceof Function) {
                     callback(packageId);
+                }
+            });
+        }
+    }
+});
+itc.factory("TestDAO", function ($resource)
+{
+    var TestREST = $resource("/api/test/:id", {id: "@id"});
+    return {
+        persistTest: function (test, callback)
+        {
+            var restTest = new TestREST(test);
+            restTest.$save(function (result)
+            {
+                angular.extend(test, result);
+                if (callback instanceof Function) {
+                    callback(test);
+                }
+            });
+        },
+        getTest: function (usecaseId, success, error)
+        {
+            TestREST.get({id: usecaseId}, success, error);
+        },
+        removeTest: function (usecaseId, callback)
+        {
+            var restTest = new TestREST({id: usecaseId});
+            restTest.$delete(function ()
+            {
+                if (callback instanceof Function) {
+                    callback(usecaseId);
                 }
             });
         }
@@ -355,7 +407,78 @@ itc.factory("nodeFactory", function (PackageDAO, UsecaseDAO, ApplicationEventBus
     }
 });
 
-itc.controller("UsecaseCtrl", function ($scope, UsecaseDAO, ApplicationEventBus)
+itc.controller("TestCtrl", function ($scope, TestDAO)
+{
+    //noinspection JSPotentiallyInvalidConstructorUsage
+    var markdownConverver = new Showdown.converter();
+
+    var originalTest , editMode;
+    $scope.$watch("pane.data", function (value)
+    {
+        if (originalTest == null && value != null) {
+            originalTest = angular.extend({}, value);
+        }
+        $scope.test = value;
+    });
+
+    $scope.isModified = function ()
+    {
+        return originalTest != null && this.test != null && (originalTest.summary != this.test.summary || originalTest.name != this.test.name);
+    };
+    $scope.isEditMode = function ()
+    {
+        return editMode
+    };
+
+    $scope.edit = function ()
+    {
+        editMode = true;
+    };
+    $scope.exitEdit = function ()
+    {
+        if (this.isModified()) {
+            if (!confirm("There are changes. Do you want to quit without saving?")) {
+                return false;
+            }
+            TestDAO.getTest(this.test.id, function (test)
+            {
+                angular.extend(originalTest, test);
+                angular.extend($scope.test, test);
+            });
+        }
+        editMode = false;
+        return true;
+    };
+
+    $scope.getSummaryPreview = function ()
+    {
+        return this.test ? markdownConverver.makeHtml(this.test.summary || "") : "Loading...";
+    };
+
+    $scope.close = function ()
+    {
+        if (!this.exitEdit()) {
+            return;
+        }
+        this.closePane(this.pane);
+    };
+
+    $scope.linkUsecase = function ()
+    {
+        alert("Not implemented yet");
+    };
+
+    $scope.save = function ()
+    {
+        TestDAO.persistTest(this.test, function (result)
+        {
+            originalTest = angular.extend({}, result);
+            $scope.test = angular.extend({}, result);
+        });
+    };
+
+});
+itc.controller("UsecaseCtrl", function ($scope, TestDAO, UsecaseDAO, ApplicationEventBus)
 {
     //noinspection JSPotentiallyInvalidConstructorUsage
     var markdownConverver = new Showdown.converter();
@@ -410,6 +533,18 @@ itc.controller("UsecaseCtrl", function ($scope, UsecaseDAO, ApplicationEventBus)
             return;
         }
         this.closePane(this.pane);
+    };
+
+    $scope.newTest = function ()
+    {
+        var name = prompt("Test name");
+        if (null != name && name.trim().length > 0) {
+            var test = {name: name, usecases: [this.usecase.id]};
+            TestDAO.persistTest(test, function (test)
+            {
+                $scope.openTest(test);
+            });
+        }
     };
 
     $scope.save = function ()
@@ -595,9 +730,16 @@ itc.controller("WorkspaceCtrl", function ($scope, Panes)
     {
         if ("usecase" == pane.type) {
             return "template/pane/usecase.html";
+        } else if ("test" == pane.type) {
+            return "template/pane/test.html";
         } else {
             throw new Error("Invalid pane type: " + pane.type);
         }
+    };
+
+    $scope.openTest = function (test)
+    {
+        Panes.openTest(test.id);
     };
 
     $scope.openUsecase = function (usecase)

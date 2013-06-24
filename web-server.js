@@ -151,6 +151,9 @@ var rootNodes = [
 var nodes = [
     {}
 ];
+var tests = [
+    {}
+];
 var nodeChildMap = [];
 
 function addChild(parentIndex, node)
@@ -206,9 +209,15 @@ function removeNode(node)
         }
     }
 }
+function randomUsecaseSummary()
+{
+    var start = parseInt(Math.random() * sample_usecase_summary.length);
+    var end = parseInt(Math.min(sample_usecase_summary.length - 1, Math.max(start + 500, Math.random() * sample_usecase_summary.length)));
+    return sample_usecase_summary.substring(start, end);
+}
 
-addChild(null, {id:1, name:"Requester", hasChildren:true});
-addChild(null, {id:2, name:"Supplier", hasChildren:false});
+addChild(null, {id: 1, name: "Requester", hasChildren: true});
+addChild(null, {id: 2, name: "Supplier", hasChildren: false});
 addChild(null, {id:3, name:"Admin", hasChildren:false});
 
 var node;
@@ -218,8 +227,10 @@ for (var i = 4; i < 100; i++) {
     /**We don't add children to Requester*/
     addChild(parentIndex, node);
 }
-addChild(1, {id:i, name:"Questionnaire"});
-addChild(1, {id:i + 1, name:"Company"});
+tests.push({id: 1, name: "Register requester happy path", summary: randomUsecaseSummary()});
+tests.push({id: 2, name: "Register existing email", summary: randomUsecaseSummary()});
+addChild(1, {id: i, name: "Questionnaire", tests: [tests[1], tests[2]]});
+addChild(1, {id: i + 1, name: "Company", tests: [tests[1]]});
 addChild(1, {id:i + 2, name:"Rating"});
 for (i = 0; i < nodes.length; i++) {
     node = nodes[i];
@@ -228,9 +239,7 @@ for (i = 0; i < nodes.length; i++) {
         node.type = NODE_TYPE_PACKAGE;
     } else {
         node.type = NODE_TYPE_USECASE;
-        var start = parseInt(Math.random() * sample_usecase_summary.length);
-        var end = parseInt(Math.min(sample_usecase_summary.length - 1, Math.max(start + 500, Math.random() * sample_usecase_summary.length)));
-        node.summary = sample_usecase_summary.substring(start, end);
+        node.summary = randomUsecaseSummary();
     }
 }
 /**
@@ -301,10 +310,11 @@ StaticServlet.prototype.handleAPIRequest = function (req, res)
     var GET_PACKAGE = /^package\/(\d+)$/;
     var LIST_ROOT_PACKAGES = /^package\/?$/;
     var LIST_PACKAGE_CONTENTS = /^package\/(\d+)\/contents$/;
+    var CREATE_TEST = /^test$/;
+    var GET_TEST = /^test\/(\d+)$/;
     var CREATE_USECASE = /^usecase$/;
     var GET_USECASE = /^usecase\/(\d+)$/;
-    var id;
-    var node;
+    var id, node, test;
     if ("GET" == req.method && apiPath.match(LIST_ROOT_PACKAGES)) {
         oK(JSON.stringify(rootNodes));
     } else if (apiPath.match(LIST_PACKAGE_CONTENTS)) {
@@ -332,6 +342,48 @@ StaticServlet.prototype.handleAPIRequest = function (req, res)
             } else if ("PUT" == req.method) {
 //            TODO not implemented yet
                 send404();
+            } else {
+                send400("Method not allowed for path " + path);
+            }
+        }
+    } else if ("POST" == req.method && apiPath.match(CREATE_TEST)) {
+        handlePost(function (body)
+        {
+            try {
+                var post = JSON.parse(body);
+                post.id = tests.length;
+                tests[post.id] = post;
+                var usecase = nodes[post.usecases[0]];
+                if (undefined == usecase.tests) {
+                    usecase.tests = [];
+                }
+                usecase.tests.push(post);
+                oK(JSON.stringify(post));
+            } catch (e) {
+                send400(e);
+            }
+        });
+    } else if (apiPath.match(GET_TEST)) {
+        id = parseInt(GET_TEST.exec(apiPath)[1]);
+        test = tests[id];
+        if (undefined == test) {
+            send404();
+        } else {
+            if ("GET" == req.method) {
+                oK(JSON.stringify(test));
+            } else if ("DELETE" == req.method) {
+                removeTest(test);
+                oK("Test #" + id + " removed successfully");
+            } else if ("POST" == req.method) {
+                handlePost(function (body)
+                {
+                    try {
+                        tests[id] = util._extend(tests[id], JSON.parse(body));
+                        oK(JSON.stringify(tests[id]));
+                    } catch (e) {
+                        send400(e);
+                    }
+                });
             } else {
                 send400("Method not allowed for path " + path);
             }
